@@ -1,0 +1,195 @@
+package kr.or.pms.controller;
+
+import java.util.Map;
+
+import javax.servlet.http.HttpSession;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import kr.or.pms.batch.BackupDbRuntime;
+import kr.or.pms.batch.RecoverDbRuntime;
+import kr.or.pms.command.DbcnCriteria;
+import kr.or.pms.command.DbcnRegistCommand;
+import kr.or.pms.dto.DbcnVO;
+import kr.or.pms.dto.UserVO;
+import kr.or.pms.scheduler.DbBackUpTask;
+import kr.or.pms.service.DbRsrvService;
+import kr.or.pms.service.DbService;
+import kr.or.pms.service.DbTypeService;
+import kr.or.pms.service.DbcnService;
+import kr.or.pms.service.UserService;
+import kr.or.pms.util.UserSha256;
+
+@Controller
+@RequestMapping("/admin/dbcn")
+public class AdminDbcnController {
+	
+	@Autowired
+	private DbService dbService;
+	@Autowired
+	private DbRsrvService dbRsrvService;
+	@Autowired
+	private DbTypeService dbTypeService;
+	@Autowired
+	private DbcnService dbcnService;
+	@Autowired
+	private UserService userService;
+	@Autowired
+	private BackupDbRuntime backupDbRuntime;
+	@Autowired
+	private RecoverDbRuntime recoverDbRuntime;
+	@Autowired
+	private DbBackUpTask dbBackUpTask;
+	
+	
+	
+	@RequestMapping("/list")
+	public void getList(DbcnCriteria cri, Model model) throws Exception {
+		String type = cri.getType();
+		
+		model.addAttribute("dbList", dbService.getDbList());
+		model.addAttribute("dbTypeList", dbTypeService.getDbTypeList());
+		model.addAttribute("dbcnSttNList", dbcnService.getDbcnBySttList("N"));
+		
+		if (type.equals("dbcn")) {
+			Map<String, Object> dataMap = dbcnService.getDbcnList(cri);
+			model.addAttribute("dataMap", dataMap);
+		} else {
+			Map<String, Object> rsrvMap = dbRsrvService.getDbRsrvList(cri);
+			model.addAttribute("dataMap", rsrvMap);
+		}
+	}
+	
+	@RequestMapping("/getModifyFormData")
+	@ResponseBody
+	public ResponseEntity<DbcnVO> getModifyFormData(@RequestParam(defaultValue = "") String dbcnNo) throws Exception {
+		ResponseEntity<DbcnVO> entity = null;
+		
+		DbcnVO dbcn = null;
+		if(!dbcnNo.isEmpty()) {
+			int no = Integer.parseInt(dbcnNo); 
+			dbcn = dbcnService.getDbcnByNo(no);
+		}
+		
+		entity = new ResponseEntity<DbcnVO>(dbcn, HttpStatus.OK);
+		
+		return entity;
+	}
+	
+	@RequestMapping("/regist")
+	@ResponseBody
+	public ResponseEntity<String> regist(DbcnRegistCommand cmd) throws Exception {
+		
+		ResponseEntity<String> entity = null;
+		
+		DbcnVO dbcnVO = cmd.toDbcnVO();
+		
+		dbcnService.regist(dbcnVO);
+		
+		entity = new ResponseEntity<String>("success", HttpStatus.OK);
+		
+		return entity;
+	}
+	
+	@RequestMapping("/modify")
+	@ResponseBody
+	public ResponseEntity<String> modify(DbcnVO dbcnVO) throws Exception {
+		
+		ResponseEntity<String> entity = null;
+		
+		String message = dbcnService.modify(dbcnVO);
+		entity = new ResponseEntity<String>(message, HttpStatus.OK);	
+		return entity;
+		
+	}
+	
+	@RequestMapping("/remove")
+	@ResponseBody
+	public ResponseEntity<String> remove(String dbcnNo) throws Exception {
+		
+		ResponseEntity<String> entity = null;
+		
+		int dbcnNoInt = Integer.parseInt(dbcnNo);
+		String message = dbcnService.remove(dbcnNoInt);
+		
+		entity = new ResponseEntity<String>(message, HttpStatus.OK);
+		return entity;
+	}
+	
+
+	@RequestMapping("/executeBackup")
+	@ResponseBody
+	public ResponseEntity<String> executeBackup(String pwd,HttpSession session) throws Exception {
+		
+		ResponseEntity<String> entity = null;
+		UserVO loginUser = (UserVO) session.getAttribute("loginUser");
+		String role = loginUser.getAuthGrpCode();
+		String msg = "";
+		if(role.equals("ROLE_ADMIN")) {
+			String userId = loginUser.getUserId();
+			String encryPwd = UserSha256.encrypt(pwd);
+			UserVO user = userService.getUserForLogin(userId);
+			
+			if(!user.getPwd().equals(encryPwd)) {
+				msg = "wrongPwd";
+			} else {
+				
+				backupDbRuntime.launch();
+				
+				msg = "success";
+			}
+			
+		} else {
+			msg = "denied";
+		}
+				
+		entity = new ResponseEntity<String>(msg, HttpStatus.OK);
+		
+		return entity;
+	}
+	
+	@RequestMapping("/executeRecover")
+	@ResponseBody
+	public ResponseEntity<String> executeRecover(HttpSession session) throws Exception {
+		
+		ResponseEntity<String> entity = null;
+		UserVO loginUser = (UserVO) session.getAttribute("loginUser");
+		String role = loginUser.getAuthGrpCode();
+		String msg = "";
+		
+		if(role.equals("ROLE_ADMIN")) {
+			
+			recoverDbRuntime.launch();
+			
+			msg = "success";
+		} else {
+			msg = "denied";
+		}
+		
+		entity = new ResponseEntity<String>(msg, HttpStatus.OK);
+		
+		return entity;
+	}
+	
+	@RequestMapping("/schedulerExec")
+	@ResponseBody
+	public ResponseEntity<String> test(DbcnVO dbcnVO) throws Exception {
+		
+		ResponseEntity<String> entity = null;
+		
+		String message = "";
+		
+		dbBackUpTask.backupDB();
+		message = "success";
+		entity = new ResponseEntity<String>(message, HttpStatus.OK);	
+		return entity;
+		
+	}
+}

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Menu-Mapper">
+	
+	<resultMap type="menu" id="tempMap">
+		<result column="MCODE" property="mCode"/>
+		<result column="MNAME" property="mName"/>
+		<result column="MLEVEL" property="mLevel"/>
+		<result column="MICON" property="mIcon"/>
+		<result column="MURL" property="mUrl"/>
+		<result column="UPCODE" property="upcode"/>
+		<result column="MTYPE" property="mType"/>
+		<result column="USE_YN" property="useYn"/>
+	</resultMap>
+	
+	<select id="selectMenuList" parameterType="hashMap" resultMap="tempMap">
+		SELECT M.* 
+		  FROM MENU M LEFT JOIN MENU_ASSIGN MA
+		    ON MA.MCODE = M.MCODE
+	   	 WHERE M.USE_YN = 'Y'
+	   	   AND M.MTYPE = #{mType}
+		   AND MA.AUTH_GRP_CODE = #{authGrpCode}
+		 ORDER BY M.MCODE
+	</select>
+	
+</mapper>

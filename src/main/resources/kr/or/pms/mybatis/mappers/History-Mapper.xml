@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="History-Mapper">
+
+	<resultMap type="history" id="historyMap">
+		<result column="HISTORY_NO" property="historyNo" />
+		<result column="USER_ID" property="userId" />
+		<result column="URL" property="url" />
+		<result column="REG_DT" property="regDt" />
+		<result column="PRJ_NO" property="prjNo" />
+		<result column="FROM_WHERE" property="fromWhere" />
+		<result column="TITLE" property="title" />
+		<result column="CONTENT" property="content" />
+	</resultMap>
+	
+	<sql id="search">
+		<if test="rangeDt != '0'.toString()">
+			and reg_dt BETWEEN TO_DATE(#{bgnDt}) AND TO_DATE(#{endDt})+1
+		</if>
+		<if test="category == 'all'.toString()">
+			and (
+			FROM_WHERE = 'notice'
+			or
+			FROM_WHERE = 'WORK'
+			or
+			FROM_WHERE = 'ISSUE'
+			or
+			FROM_WHERE = 'schedule'					
+			or
+			FROM_WHERE = 'proceedings'					
+			)			
+		</if>
+		<if test="category == 'n'.toString()">
+			and FROM_WHERE = 'notice'			
+		</if>
+		<if test="category == 'w'.toString()">
+			and FROM_WHERE = 'WORK'			
+		</if>
+		<if test="category == 'i'.toString()">
+			and FROM_WHERE = 'ISSUE'			
+		</if>
+		<if test="category == 's'.toString()">
+			and FROM_WHERE = 'schedule'			
+		</if>
+		<if test="category == 'p'.toString()">
+			and FROM_WHERE = 'proceedings'			
+		</if>
+		<if test="searchType == 't'.toString()">
+			and title like '%'||#{keyword}||'%'			
+		</if>
+		<if test="searchType == 'c'.toString()">
+			and content like '%'||#{keyword}||'%'			
+		</if>
+		<if test="searchType == 'tc'.toString()">
+			and (
+			title like '%'||#{keyword}||'%'
+			or
+			content like '%'||#{keyword}||'%'						
+			)			
+		</if>
+	</sql>
+	
+	<select id="selectHistoryCriteria" resultMap="historyMap">
+		select
+		*
+		from
+		history
+		where history_no is not null
+		  and prj_no = #{prjNo}
+		<include refid="search" />
+		order by reg_dt desc
+	</select>
+
+	<select id="selectHistoryCriteriaTotalCount"  resultType="int">
+		select
+		count(*)
+		from
+		history
+		where history_no is not null
+		  and prj_no = #{prjNo}
+		<include refid="search" />
+		order by reg_dt desc
+	</select>
+	
+	<update id="insertHistory" parameterType="history">
+		insert into 
+		history
+		(history_no, user_id, prj_no, reg_dt, from_where, url, title, content)
+		values
+		(history_no_seq.nextval,#{userId},#{prjNo},sysdate,#{fromWhere},#{url},#{title},#{content})
+	</update>
+		
+	
+</mapper>  
+
+

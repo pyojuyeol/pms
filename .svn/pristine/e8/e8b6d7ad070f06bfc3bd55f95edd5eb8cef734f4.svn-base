@@ -1,0 +1,374 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Work-Mapper">
+
+	<resultMap type="work" id="workMap">
+		<result column="WORK_NO" property="workNo" />
+		<result column="UP_WORK" property="upWork" />
+		<result column="PRJ_NO" property="prjNo" />
+		<result column="WORK_TITLE" property="workTitle" />
+		<result column="WORK_COMMENT" property="workComment" />
+		<result column="WORKER" property="worker" />
+		<result column="STT_CODE" property="sttCode" />
+		<result column="WORK_RATE" property="workRate" />
+		<result column="IPCR_CODE" property="ipcrCode" />
+		<result column="BGN_DT" property="bgnDt" />
+		<result column="END_DT" property="endDt" />
+		<result column="WORK_URL" property="workUrl" />
+		
+		<result column="WORK_REGISTER" property="workRegister" />
+		<result column="WORK_UPDATER" property="workUpdater" />
+		<result column="REG_DT" property="regDt" />
+		<result column="UPD_DT" property="updDt" />
+		<result column="CMPL_DT" property="cmplDt" />
+		
+		<result column="PRJ_NM" property="prjNm" />
+		<result column="USER_NM" property="userNm" />
+		
+	</resultMap>
+
+
+	<sql id="search">
+		<if test="searchType == 't'.toString()">
+			and b.work_title like '%'||#{keyword}||'%'			
+		</if>
+		<if test="searchType == 'c'.toString()">
+			and b.work_comment like '%'||#{keyword}||'%'
+		</if>
+		<if test="searchType == 'w'.toString()">
+			and c.user_nm like '%'||#{keyword}||'%'
+		</if>
+		<if test="searchType == 'uno'.toString()">
+			and b.up_work = #{keyword}
+		</if>
+	</sql>
+	<sql id="searchCount">
+		<if test="searchType == 't'.toString()">
+			and b.work_title like '%'||#{keyword}||'%'			
+		</if>
+		<if test="searchType == 'c'.toString()">
+			and b.work_comment like '%'||#{keyword}||'%'
+		</if>
+		<if test="searchType == 'w'.toString()">
+			and c.user_nm like '%'||#{keyword}||'%'
+		</if>
+		<if test="searchType == 'uno'.toString()">
+			and b.up_work = #{keyword}
+		</if>
+	</sql>
+	
+	
+	<sql id="searchStt">
+		<if test="sttCode != ''">
+			and b.stt_code = #{sttCode}
+		</if>
+	</sql>
+	<sql id="searchIpcr">
+		<if test="ipcrCode != ''">
+			and b.ipcr_code = #{ipcrCode}
+		</if>
+	</sql>
+	<sql id="searchWorker">
+		<if test="worker != ''">
+			and b.worker = #{worker}
+		</if>
+	</sql>
+	
+	<sql id="searchSttCount">
+		<if test="sttCode != ''">
+			and b.stt_code = #{sttCode}
+		</if>
+	</sql>
+	<sql id="searchIpcrCount">
+		<if test="ipcrCode != ''">
+			and b.ipcr_code = #{ipcrCode}
+		</if>
+	</sql>
+	<sql id="searchWorkerCount">
+		<if test="worker != ''">
+			and a.worker = #{worker}
+		</if>
+	</sql>
+	
+	<!-- 일감 목록 -->
+	<select id="selectSearchWorkListByPno" resultMap="workMap">
+		select b.*,
+			   a.prj_nm,
+		       c.user_nm
+		  from project a, work b, users c
+		 where a.prj_no = #{prjNo}
+		   and a.prj_no = b.prj_no
+		   and b.worker = c.user_id
+		   and b.stt_code != 'd'
+		<include refid="searchStt" />
+		<include refid="searchIpcr" />
+		<include refid="searchWorker" />
+		<include refid="search" />
+		order by b.work_no desc
+	</select>
+	<select id="selectSearchWorkListCountByPno" resultType="int">
+		select count(*)
+		  from work b, users a
+		 where b.prj_no = #{prjNo}
+		   and b.worker = a.user_id
+		   and b.stt_code != 'd'
+		<include refid="searchSttCount" />
+		<include refid="searchIpcrCount" />
+		<include refid="searchWorkerCount" />
+		<include refid="searchCount" />
+	</select>
+	<!-- 하위일감 가져오기 -->
+	<select id="selectSubWorkListByUno" resultType="int" resultMap="workMap">
+		select b.*,
+		       a.prj_nm,
+		       c.user_nm
+		  from project a, work b, users c
+		 where b.prj_no = a.prj_no
+		   and b.worker = c.user_id
+		   and b.up_work = #{upWork}
+		   and b.stt_code != 'd'
+		   order by b.end_dt asc
+	</select>
+	
+	
+	<!-- 마이페이지 내 일감 리스트 -->
+	<select id="selectMyWorkListById" parameterType="str" resultMap="workMap">
+		select b.*,
+		       a.prj_nm,
+		       c.user_nm
+		  from project a, work b, users c
+		 where b.worker = #{userId}
+		   and b.prj_no = a.prj_no
+		   and b.worker = c.user_id
+		   and b.stt_code != 'd'
+		<include refid="searchStt" />
+		<include refid="searchIpcr" />
+		<include refid="search" />
+		 order by b.end_dt asc
+	</select>
+	<select id="selectMyWorkListCountById" resultType="int">
+		select count(*)
+		  from project a, work b
+		 where b.worker = #{userId}
+		   and b.prj_no = a.prj_no
+		   and b.stt_code != 'd'
+  		<include refid="searchSttCount" />
+		<include refid="searchIpcrCount" />
+		<include refid="searchCount" />
+	</select>
+<!-- 	<select id="selectMyWorkListCountById" resultType="int">
+		select count(*)
+		from work
+		where PRJ_NO = #{prjNo}
+		  and WORK_NO is not null
+		  and stt_code != 'd'
+		<include refid="searchSttCount" />
+		<include refid="searchIpcrCount" />
+		<include refid="searchCount" />
+		order by WORK_NO desc
+	</select> -->
+	
+	
+	<!-- Home DashBoard -->
+	<select id="selectWorkListHomeById" parameterType="str" resultMap="workMap">
+		select b.*,
+		       a.prj_nm,
+		       c.user_nm
+		  from project a, work b, users c
+		 where b.prj_no = a.prj_no
+		   and b.worker = c.user_id
+		   and b.worker = #{userId}
+		   and b.stt_code != 'd'
+   		   and b.stt_code != 'c'
+		<![CDATA[
+		   and rownum <= 5
+		]]>
+		 order by b.end_dt asc
+	</select>
+	
+	<!-- Home DashBoard -->
+	<select id="selectWorkListProjectHomeById" parameterType="map" resultMap="workMap">
+		select b.*,
+		       a.prj_nm,
+		       c.user_nm
+		  from project a, work b, users c
+		 where b.prj_no = #{prjNo}
+		   and b.prj_no = a.prj_no
+		   and b.worker = c.user_id
+		   and b.worker = #{userId}
+		   and b.stt_code != 'd'
+   		   and b.stt_code != 'c'
+		<![CDATA[
+		   and rownum <= 5
+		]]>
+		 order by b.end_dt asc
+	</select>
+	
+<!-- 	<select id="selectWorkListHomeById" parameterType="str" resultMap="workMap"> -->
+<!-- 		select c.*, -->
+<!-- 		       a.prj_nm, -->
+<!-- 		       d.user_nm -->
+<!-- 		  from project a, prj_user b, work c, users d -->
+<!-- 		 where b.user_id = #{userId} -->
+<!-- 		   and b.prj_no = a.prj_no -->
+<!-- 		   and a.prj_no = c.prj_no -->
+<!-- 		   and c.worker = d.user_id -->
+<!-- 		   and c.stt_code != 'd' -->
+<!-- 		   and c.stt_code != 'c' -->
+<!-- 		<![CDATA[ -->
+<!-- 		   and rownum <= 5 -->
+<!-- 		]]> -->
+<!-- 		 order by c.end_dt asc -->
+<!-- 	</select> -->
+	
+	<select id="selectWorkListByPno" resultMap="workMap">
+		select *
+		from work
+		where PRJ_NO = #{prjNo}
+		  and stt_code != 'd'
+	</select>
+
+	
+	<select id="selectWorkListCountByPno" resultType="int">
+		select count(*)
+		from work
+		where PRJ_NO = #{prjNo}
+		  and WORK_NO is not null
+		  and stt_code != 'd'
+		order by WORK_NO desc
+	</select>
+	
+	<!-- 하위일감 조회 -->
+	<select id="selectSubWorksByUno" resultMap="workMap">
+		select *
+		  from work
+		 where up_work = #{upWork}
+		   and stt_code != 'd'
+	</select>
+	
+	<!-- 간트차트 -->
+	<select id="selectWorkListFromGantt" parameterType="work" resultMap="workMap">
+		select *
+		from work
+		where PRJ_NO = #{prjNo}
+		  and stt_code != 'd'
+		<if test="worker != null and worker != ''">
+		 	AND WORKER = #{worker} 
+		</if>
+		<if test="sttCode != null and sttCode != ''">
+		 	AND STT_CODE = #{sttCode} 
+		</if>
+		<if test="ipcrCode != null and ipcrCode != ''">
+		 	AND IPCR_CODE = #{ipcrCode} 
+		</if>
+		order by WORK_NO desc
+	</select>
+	
+	<select id="selectWorkByWno" resultMap="workMap">
+		select b.*,
+		       c.user_nm
+		  from project a, work b, users c
+		 where b.work_no = #{workNo}
+		   and a.prj_no = b.prj_no
+		   and b.worker = c.user_id
+	</select>
+	
+	<!-- 일감 상태별 개수 조회 -->
+	<select id="selectRequestWorkCount" parameterType="int" resultType="int">
+		select count(*)
+		from work
+		where prj_no = #{prjNo}
+		  and stt_code = 'r'
+	</select>
+	<select id="selectProceedingWorkCount" parameterType="int" resultType="int">
+		select count(*)
+		from work
+		where prj_no = #{prjNo}
+		  and stt_code = 'p'
+	</select>
+	<select id="selectFeedbackWorkCount" parameterType="int" resultType="int">
+		select count(*)
+		from work
+		where prj_no = #{prjNo}
+		  and stt_code = 'f'
+	</select>
+	<select id="selectCompleteWorkCount" parameterType="int" resultType="int">
+		select count(*)
+		from work
+		where prj_no = #{prjNo}
+		  and stt_code = 'c'
+	</select>
+	<select id="selectHoldWorkCount" parameterType="int" resultType="int">
+		select count(*)
+		from work
+		where prj_no = #{prjNo}
+		  and stt_code = 'h'
+	</select>
+	
+	
+	<update id="insertWork" parameterType="work">
+		insert into
+		work 
+			(WORK_NO, PRJ_NO, WORK_TITLE, WORKER, STT_CODE, IPCR_CODE, WORK_RATE, BGN_DT, END_DT, WORK_URL, WORK_REGISTER, WORK_UPDATER, REG_DT
+			<if test="upWork != null and upWork != 0">
+		 		, UP_WORK
+			</if>
+			<if test="workComment != null and workComment != ''">
+		 		, WORK_COMMENT
+			</if>
+			)
+		values 
+			(#{workNo}, #{prjNo}, #{workTitle}, #{worker}, #{sttCode}, #{ipcrCode}, #{workRate}, #{bgnDt}, #{endDt}, #{workUrl}, #{workRegister}, #{workUpdater}, sysdate
+			<if test="upWork != null and upWork != 0">
+		 		, #{upWork}
+			</if>
+			<if test="workComment != null and workComment != ''">
+		 		, #{workComment}
+			</if>
+			)
+	</update>
+	
+	<update id="updateWork" parameterType="work">
+		update work
+		set WORK_TITLE = #{workTitle}, WORKER = #{worker},
+			STT_CODE = #{sttCode}, IPCR_CODE = #{ipcrCode}, WORK_RATE = #{workRate}, BGN_DT = #{bgnDt}, END_DT = #{endDt},
+			UPD_DT = sysdate, WORK_UPDATER = #{workUpdater}
+			<if test="upWork != null and upWork != 0">
+				, UP_WORK = #{upWork}
+			</if>
+			<if test="workComment != null and workComment != ''">
+				, WORK_COMMENT = #{workComment}
+			</if>
+			<if test='sttCode == "c"'>
+		 		, CMPL_DT = sysdate
+			</if>
+		where WORK_NO = #{workNo}
+	</update>
+	
+	<update id="deleteWork">
+		update work
+		set stt_code = 'd'
+		where WORK_NO = #{workNo}
+	</update>
+
+	<select id="selectPnoByWno" parameterType="int" resultType="int">
+		select prj_no
+		from work
+		where WORK_NO = #{workNo}
+	</select>
+	
+	<select id="selectWorkSeqNext" resultType="int">
+		select work_seq.nextval as WORK_NO from dual
+	</select>
+	
+	<select id="selectUserNmById" parameterType="str" resultType="str">
+		select user_nm
+		from users
+		where user_id = #{userId}
+	</select>
+
+</mapper>

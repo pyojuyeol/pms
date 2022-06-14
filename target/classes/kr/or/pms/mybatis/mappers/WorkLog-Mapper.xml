@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="WorkLog-Mapper">
+
+	<resultMap type="workLog" id="workLogMap">
+		<result column="WORK_LOG_NO" property="workLogNo"/>
+		<result column="WORK_NO" property="workNo"/>
+		<result column="UPDATER" property="updater"/>
+		<result column="UPD_DT" property="updDt"/>
+		<result column="WHAT" property="what"/>
+		<result column="BEFORE" property="before"/>
+		<result column="AFTER" property="after"/>
+
+		<result column="USER_NM" property="userNm"/>
+	</resultMap>
+
+
+	<select id="selectWorkLogListByWno" parameterType="int" resultMap="workLogMap">
+		select a.*,
+		       b.user_nm
+		  from work_log a, users b
+		 where a.work_no = #{workNo}
+		   and a.updater = b.user_id
+   		 order by upd_dt desc
+	</select>
+	
+	<update id="insertWorkLog">
+		insert into
+		work_log (WORK_LOG_NO, WORK_NO, WHAT, BEFORE, AFTER, UPDATER, UPD_DT)
+		values (work_log_seq.nextval, #{workNo}, #{what}, #{before}, #{after}, #{updater}, sysdate)
+	</update>
+	
+	<select id="selectWorkLogSeqNext" resultType="int">
+		select work_log_seq.nextval as WORK_LOG_NO from dual
+	</select>
+	
+</mapper>

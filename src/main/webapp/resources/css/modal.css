@@ -1,0 +1,28 @@
+@charset "UTF-8";
+
+.modal-content {
+	padding: 1rem 2rem;
+     max-height: 80vh;
+     overflow-y: auto;
+     -ms-overflow-style: none;
+ }
+ .modal-content::-webkit-scrollbar {
+ 	display:none;
+ }
+ 
+ .modal-dialog {
+ 	top: 43%;
+ 	transform: translateY(-50%)!important;
+ 	
+ }
+ .modal-dialog span {
+ 	line-height: 1.4;
+ }
+ .modal-footer {
+     justify-content: space-between
+ }
+ 
+ .modal-title {
+ 	font-size: 1.3rem;
+ 	font-weight: 600;
+ }

@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Dbcn-Mapper">
+
+	<resultMap id="dbcnMap" type="dbcn">
+		<result column="DBCN_NO" property="dbcnNo" />
+		<result column="PATH" property="path" />
+		<result column="FILE_NM" property="fileNm" />
+		<result column="DBCN_URL" property="dbcnUrl" />
+		<result column="DBCN_USER" property="dbcnUser" />
+		<result column="DBCN_PWD" property="dbcnPwd" />
+		<result column="DB_TYPE" property="dbType" />
+		<result column="PATH" property="path" />
+		<result column="FILE_NM" property="fileNm" />
+		<result column="MAX_IDLE" property="maxIdle" />
+		<result column="MAX_TOTAL" property="maxTotal" />
+		<result column="STT_CODE" property="sttCode" />
+		<result column="DBCN_NM" property="dbcnNm" />
+		<result column="REG_DT" property="regDt" />
+		<result column="UPD_DT" property="updDt" />
+		<result column="DEL_DT" property="delDt" />
+		<result column="DEL_KEY" property="delKey" />
+
+		<result column="DB_NO" property="dbNo" />
+		<result column="DB_NM" property="dbNm" />
+		<result column="RSRV_DB_NM" property="rsrvDbNm" />
+	</resultMap>
+ 	<sql id="search">
+		<if test="searchType == 'u'.toString()">
+			and DBCN_URL like '%'||#{keyword}||'%'
+		</if>
+		<if test="searchType == 'i'.toString()">
+			and DBCN_USER like '%'||#{keyword}||'%'
+		</if>
+	</sql>
+
+	<select id="selectDbcnList" resultMap="dbcnMap">
+		select d.db_no, d.db_nm, dc.*, ddr.db_nm as rsrv_db_nm
+		  from db d right 
+		 outer join dbcn dc
+		    on dc.dbcn_no = d.dbcn_no
+    left outer join (select dr.*, db.db_nm
+					  from (select * 
+					  		  from db_rsrv 
+					  		 where to_char(reg_dt-1,'yyyy-mm-dd') = to_char(sysdate-1,'yyyy-mm-dd') 
+					  		   and stt = 0
+					  		 order by db_no) dr 
+					  left join db
+					    on dr.db_no = db.db_no) ddr
+		    on dc.dbcn_no = ddr.dbcn_no
+		    
+		 where dc.del_key = 0
+		    <include refid="search"/>
+		    
+	 	 order by d.db_no, dc.stt_code desc, dc.upd_dt desc
+	</select>
+	
+	<select id="selectDbcnByStt" resultMap="dbcnMap">
+		select *
+		  from dbcn
+		 where stt_code = #{stt}
+		   and del_key = 0
+	 	 order by upd_dt desc
+	</select>
+	
+	<select id="countTotalDbcn" resultType="int">
+		select count(*)
+		  from (select d.db_no, d.db_nm, dc.* 
+		  from db d right outer join dbcn dc
+		    on dc.dbcn_no = d.dbcn_no
+		 where dc.del_key = 0
+		    <include refid="search"/>
+	 	 order by d.db_no, dc.upd_dt desc)
+	</select>
+	<select id="selectDbcnByNo" parameterType="int" resultMap="dbcnMap">
+  		select * 
+  		  from dbcn
+  		  where dbcn_no = #{dbcnNo}
+	</select>
+
+	<update id="insert" parameterType="dbcn">
+		insert into dbcn
+		(
+			  dbcn_no
+			, db_type
+			, dbcn_url
+			, dbcn_user
+			, dbcn_pwd
+			, path
+			, file_nm
+			, max_idle
+			, max_total
+		)
+		values
+		(
+			  dbcn_no_seq.nextval
+			, #{dbType}
+			, #{dbcnUrl}
+			, #{dbcnUser}
+			, #{dbcnPwd}
+			, #{path}
+			, #{fileNm}
+			, #{maxIdle}
+			, #{maxTotal}
+		)
+	</update>
+
+	<update id="update" parameterType="dbcn">
+		update dbcn
+		set db_type   = #{dbType },
+			dbcn_url  = #{dbcnUrl },
+			dbcn_user = #{dbcnUser },
+			dbcn_pwd  = #{dbcnPwd },
+			path      = #{path },
+			file_nm   = #{fileNm },
+			stt_code  = #{sttCode },
+			max_idle  = #{maxIdle },
+			max_total = #{maxTotal },
+			upd_dt    = sysdate
+		where dbcn_no = #{dbcnNo}
+	</update>
+
+	<update id="delete" parameterType="int">
+		update dbcn
+		   set del_key = 1,
+		       del_dt  = sysdate
+		 where dbcn_no = #{dbcnNo}
+	</update>
+
+
+</mapper>  
+
+

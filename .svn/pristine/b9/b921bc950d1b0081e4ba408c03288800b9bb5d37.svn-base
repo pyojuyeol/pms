@@ -1,0 +1,381 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<!-- system db dump file path -->
+	<bean id="dbDumpPath" class="java.lang.String">
+		<constructor-arg value="${system.db.dump}" />
+	</bean>
+	<!-- system db drop table sql file path -->
+	<bean id="dropTablePath" class="java.lang.String">
+		<constructor-arg value="${system.db.dropTableSql}" />
+	</bean>
+	<!-- system locker path -->
+	<bean id="systemLockerPath" class="java.lang.String">
+		<constructor-arg value="${system.locker}" />
+	</bean>
+	
+	<!-- login user log path -->
+	<bean id="loginUserLogSavePath" class="java.lang.String">
+		<constructor-arg value="${login.user.log}" />
+	</bean>
+	
+	<!-- file upload -->
+	<bean id="fileUploadPath" class="java.lang.String">
+		<constructor-arg value="${pds.upload}"/>
+	</bean>
+	
+	<!-- member.picture -->
+	<bean id="picturePath" class="java.lang.String">
+		<constructor-arg value="${file.upload}" />
+	</bean>
+	
+	<!-- cloud.upload -->
+	<bean id="cloudUploadPath" class="java.lang.String">
+		<constructor-arg value="${cloud.upload}"/>
+	</bean>
+	
+	<!-- notice.upload -->
+	<bean id="noticeUploadPath" class="java.lang.String">
+		<constructor-arg value="${notice.upload}"/>
+	</bean>
+	
+	<!-- summernote.img -->
+	<bean id="summernoteImgPath" class="java.lang.String">
+		<constructor-arg value="${summernote.img}"/>
+	</bean>
+	
+	<!-- ============================================================= -->
+			
+		
+	<!-- ==== 공통사항 시작 ==== -->
+	
+	<!-- 공통코드 -->
+	<bean id="comCodeDAO"
+	      class="kr.or.pms.dao.ComCodeDAOImpl"
+		  p:session-ref="sqlSession"
+	/>
+	<bean id="comCodeService"
+		  class="kr.or.pms.service.ComCodeServiceImpl"
+		  p:comCodeDAO-ref="comCodeDAO"
+	/>
+	<!-- 메뉴 -->
+	<bean id="menuDAO"
+		  class="kr.or.pms.dao.MenuDAOImpl"
+		  p:session-ref="sqlSession" 
+	/>
+	<bean id="menuService"
+	  class="kr.or.pms.service.MenuServiceImpl"
+	  p:menuDAO-ref="menuDAO"
+	/>
+	<!-- 메일 보내기 탬플릿 -->
+	<bean id="htmlTempDAO"
+		  class="kr.or.pms.dao.HtmlTempDAOImpl"
+		  p:session-ref="sqlSession" 
+	/>
+	<bean id="htmlTempService"
+		  class="kr.or.pms.service.HtmlTempServiceImpl"
+		  p:htmlTempDAO-ref="htmlTempDAO"
+	/>
+	<!-- 알림 -->
+	<bean id="pushDAO"
+		  class="kr.or.pms.dao.PushDAOImpl"
+		  p:session-ref="sqlSession"
+	/>
+	<bean id="pushService"
+		  class="kr.or.pms.service.PushServiceImpl"
+		  p:pushDAO-ref="pushDAO"
+	/>	
+	<!-- 자료게시판 -->
+   	<bean id="pdsDAO"
+	  	  class="kr.or.pms.dao.PdsDAOImpl"
+	  	  p:session-ref="sqlSession"
+	/>
+   	<bean id="pdsReplyDAO"
+	  	  class="kr.or.pms.dao.PdsReplyDAOImpl"
+	  	  p:session-ref="sqlSession"
+	/>
+	<bean id="pdsService"
+		  class="kr.or.pms.service.PdsServiceImpl"
+		  p:pdsDAO-ref="pdsDAO"
+		  p:logDAO-ref="logDAO"
+	/>      
+	<bean id="pdsReplyService"
+		  class="kr.or.pms.service.PdsReplyServiceImpl"
+		  p:pdsReplyDAO-ref="pdsReplyDAO"
+	/>	
+	<!-- 댓글 -->
+	<bean id="replyDAO"
+		  class="kr.or.pms.dao.ReplyDAOImpl"
+		  p:session-ref="sqlSession"
+	/>
+	<bean id="replyService"
+		  class="kr.or.pms.service.ReplyServiceImpl"
+		  p:replyDAO-ref="replyDAO"
+	/>	  
+	
+	<!-- Record -->
+	<bean id="favoritesDAO"
+		  class="kr.or.pms.dao.FavoritesDAOImpl"
+		  p:session-ref="sqlSession"
+	/>
+	<bean id="favoritesService"
+		  class="kr.or.pms.service.FavoritesServiceImpl"
+		  p:favoritesDAO-ref="favoritesDAO"
+	/>
+	
+	
+	<!-- ==== 공통사항 끝 ==== -->
+	
+	
+	<!-- ============================================================= -->
+
+ 		
+ 		
+	<!-- ==== 관리자 시작 ==== -->
+  		
+ 	<!-- DB 관리 -->
+ 	<bean id="dbDAO"
+		  class="kr.or.pms.dao.DbDAOImpl"
+		  p:session-ref="sqlSession"
+	/>
+	<bean id="dbcnDAO"
+		  class="kr.or.pms.dao.DbcnDAOImpl"
+		  p:session-ref="sqlSession"
+	/>
+	<bean id="dbTypeDAO"
+		  class="kr.or.pms.dao.DbTypeDAOImpl"
+		  p:session-ref="sqlSession"
+	/>
+	<bean id="dbRsrvDAO"
+		  class="kr.or.pms.dao.DbRsrvDAOImpl"
+		  p:session-ref="sqlSession"
+	/>
+	<bean id="dbService"
+		  class="kr.or.pms.service.DbServiceImpl"
+		  p:dbDAO-ref="dbDAO"
+		  p:dbcnDAO-ref="dbcnDAO"
+	/>
+	<bean id="dbTypeService"
+		  class="kr.or.pms.service.DbTypeServiceImpl"
+		  p:dbTypeDAO-ref="dbTypeDAO"
+	/>
+	<bean id="dbcnService"
+		  class="kr.or.pms.service.DbcnServiceImpl"
+		  p:dbcnDAO-ref="dbcnDAO"
+		  p:dbTypeDAO-ref="dbTypeDAO"
+	/>
+	<bean id="dbRsrvService"
+		  class="kr.or.pms.service.DbRsrvServiceImpl"
+		  p:dbRsrvDAO-ref="dbRsrvDAO"
+		  p:dbcnDAO-ref="dbcnDAO"
+	/>
+	
+	
+	
+	<!-- 로그 관리 공통 + 관리자 -->
+	<bean id="logDAO"
+		  class="kr.or.pms.dao.LogDAOImpl"
+		  p:session-ref="sqlSession"
+    />
+    
+    <bean id="logService" 
+          class="kr.or.pms.service.LogServiceImpl"
+    	  p:logDAO-ref="logDAO"
+    />	
+	<!-- ==== 관리자 끝 ==== -->
+	
+	
+	
+	<!-- ============================================================= -->
+
+			
+			
+	<!-- ==== 사용자 시작 ==== -->
+	<!-- user -->
+	<bean id="userDAO" 
+	      class="kr.or.pms.dao.UserDAOImpl"
+	      p:session-ref="sqlSession"
+	/>
+	<bean id="userService" 
+	      class="kr.or.pms.service.UserServiceImpl"
+	      p:userDAO-ref="userDAO"
+	      p:cloudDAO-ref="cloudDAO"
+	      p:comCodeDAO-ref="comCodeDAO"
+	/>
+	<!-- 클라우드 -->
+	<bean id="cloudDAO"
+		  class="kr.or.pms.dao.CloudDAOImpl"
+		  p:session-ref="sqlSession"
+	/>
+	<bean id="cloudService"
+		  class="kr.or.pms.service.CloudServiceImpl"
+		  p:cloudDAO-ref="cloudDAO"
+		  p:cloudUploadPath-ref="cloudUploadPath"
+		  p:projectDAO-ref="projectDAO"
+		  p:logDAO-ref="logDAO"
+	/>
+	<!-- 일정 -->
+	<bean id="calendarDAO"
+	      class="kr.or.pms.dao.CalendarDAOImpl"
+		  p:session-ref="sqlSession"
+	/>
+	<bean id="calendarService"
+		  class="kr.or.pms.service.CalendarServiceImpl"
+		  p:calendarDAO-ref="calendarDAO"
+	/>
+	
+	<!-- 공통 -->
+	<bean id="commonService"
+		  class="kr.or.pms.service.CommonServiceImpl"
+		  p:htmlTempService-ref="htmlTempService"
+		  p:mimeAttachNotifier-ref="mailNotifier"
+		  p:userDAO-ref="userDAO"
+	/>
+	<!-- ==== 사용자 끝 ==== -->
+	
+	
+	
+	<!-- ============================================================= -->
+		
+		
+		
+	<!-- ==== 프로젝트 시작 ==== -->
+	
+	<!-- 공지사항 -->
+	<bean id="noticeDAO"
+		  class="kr.or.pms.dao.NoticeDAOImpl"
+		  p:session-ref="sqlSession"
+	/>
+	<bean id="noticeService"
+		  class="kr.or.pms.service.NoticeServiceImpl"
+		  p:noticeDAO-ref="noticeDAO"
+		  p:pushDAO-ref="pushDAO"
+		  p:logDAO-ref="logDAO"
+	/>	
+	<!-- 팀 -->
+	<bean id="teamDAO" 
+		  class="kr.or.pms.dao.TeamDAOImpl"
+		  p:session-ref="sqlSession"
+	/>
+	<bean id="tmemDAO" 
+	      class="kr.or.pms.dao.TmemDAOImpl"
+		  p:session-ref="sqlSession"
+	/>	
+	<bean id="tmemLogDAO" 
+	      class="kr.or.pms.dao.TmemLogDAOImpl"
+		  p:session-ref="sqlSession"
+	/>
+	<bean id="teamService"
+		  class="kr.or.pms.service.TeamServiceImpl"
+		  p:teamDAO-ref="teamDAO"
+		  p:tmemDAO-ref="tmemDAO"
+		  p:tmemLogDAO-ref="tmemLogDAO"
+		  p:pushDAO-ref="pushDAO"
+		  p:projectDAO-ref="projectDAO"
+	/>
+	<!-- 이슈 -->
+	<bean id="issueDAO"
+		  class="kr.or.pms.dao.IssueDAOImpl"
+		  p:session-ref="sqlSession"
+	/>
+	<bean id="issueService"
+		  class="kr.or.pms.service.IssueServiceImpl"
+		  p:issueDAO-ref="issueDAO"
+	/>
+	<!-- 북마크 -->
+	<bean id="bookMarkDAO"
+		  class="kr.or.pms.dao.BookMarkDAOImpl"
+		  p:session-ref="sqlSession"/>
+	<bean id="bookMarkService"
+		  class="kr.or.pms.service.BookMarkServiceImpl"
+		  p:bookMarkDAO-ref="bookMarkDAO"/>
+	<!-- 프로젝트 -->
+	<bean id="projectDAO"
+		  class="kr.or.pms.dao.ProjectDAOImpl"
+		  p:session-ref="sqlSession"
+	/>
+	<bean id="projectService"
+		  class="kr.or.pms.service.ProjectServiceImpl"
+		  p:projectDAO-ref="projectDAO"
+		  p:prjUserDAO-ref="prjUserDAO"
+		  p:cloudDAO-ref="cloudDAO"
+		  p:workDAO-ref="workDAO"
+		  p:pushDAO-ref="pushDAO"
+	/>
+	<bean id="prjUserDAO"
+		  class="kr.or.pms.dao.PrjUserDAOImpl"
+		  p:session-ref="sqlSession" 
+	/>
+	<bean id="prjUserService"
+		  class="kr.or.pms.service.PrjUserServiceImpl"
+		  p:prjUserDAO-ref="prjUserDAO"
+	/>
+	<!-- 일감 -->
+	<bean id="workDAO"
+		  class="kr.or.pms.dao.WorkDAOImpl"
+		  p:session-ref="sqlSession"
+	/>
+	<bean id="workService"
+		  class="kr.or.pms.service.WorkServiceImpl"
+		  p:workDAO-ref="workDAO"
+		  p:workLogDAO-ref="workLogDAO"
+		  p:historyDAO-ref="historyDAO"
+		  p:pushDAO-ref="pushDAO"
+	/>
+	<!-- 일감로그 -->
+	<bean id="workLogDAO"
+		  class="kr.or.pms.dao.WorkLogDAOImpl"
+		  p:session-ref="sqlSession"
+	/>
+	<bean id="workLogService"
+		  class="kr.or.pms.service.WorkLogServiceImpl"
+		  p:workLogDAO-ref="workLogDAO"
+		  p:comCodeDAO-ref="comCodeDAO"
+	/>
+	<!-- 히스토리 -->
+	<bean id="historyDAO"
+		  class="kr.or.pms.dao.HistoryDAOImpl"
+		  p:session-ref="sqlSession"
+	/>
+	<bean id="historyService"
+		  class="kr.or.pms.service.HistoryServiceImpl"
+		  p:historyDAO-ref="historyDAO"
+	/>
+	
+	<!-- 회의록 -->
+	<bean id="proceedingsDAO"
+		  class="kr.or.pms.dao.ProceedingsDAOImpl"
+		  p:session-ref="sqlSession"
+	/>
+	<bean id="proceedingsService"
+		  class="kr.or.pms.service.ProceedingsServiceImpl"
+		  p:proceedingsDAO-ref="proceedingsDAO"
+		  p:historyDAO-ref="historyDAO"
+		  p:pushDAO-ref="pushDAO"
+		  p:userDAO-ref="userDAO"
+	/>
+	
+	<!-- 업무보고 -->
+	<bean id="reportDAO"
+		  class="kr.or.pms.dao.ReportDAOImpl"
+		  p:session-ref="sqlSession"
+	/>
+	
+	<bean id="reportService"
+		  class="kr.or.pms.service.ReportServiceImpl"
+		  p:reportDAO-ref="reportDAO"
+	/>
+	
+	
+	<!-- ==== 프로젝트 끝 ==== -->
+	
+	<!-- 스케쥴러 시작 -->
+	<bean id="removeUnusedFileDAO"
+	      class="kr.or.pms.dao.RemoveUnusedFileDAOImpl"
+	      p:session-ref="sqlSession"
+	/>
+	
+</beans>

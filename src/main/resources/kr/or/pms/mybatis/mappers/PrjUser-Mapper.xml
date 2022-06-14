@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="PrjUser-Mapper">
+
+	<resultMap type="prjUser" id="prjUserMap">
+		<result column="prj_no" property="prjNo"/>
+		<result column="user_id" property="userId"/>
+		<result column="user_nm" property="userNm"/>
+		<result column="leader" property="leader"/>
+		<result column="prj_role" property="prjRole"/>
+		<result column="stt_code" property="sttCode"/>
+		<result column="bgn_dt" property="bgnDt"/>
+		<result column="end_dt" property="endDt"/>
+		<result column="prj_auth_create" property="prjAuthCreate"/>
+		<result column="prj_auth_read" property="prjAuthRead"/>
+		<result column="prj_auth_update" property="prjAuthUpdate"/>
+		<result column="prj_auth_delete" property="prjAuthDelete"/>
+	</resultMap>
+
+
+	<select id="selectPrjUsersByPno" resultMap="prjUserMap">
+		select b.*,
+		       a.user_nm
+		  from users a, prj_user b, project c, com_code d
+		 where b.prj_no = #{prjNo}
+		   and c.prj_no = b.prj_no
+		   and b.user_id = a.user_id
+           and b.prj_role = d.com_code
+		   and b.stt_code != 'd'
+		 order by d.com_code_desc asc
+	</select>
+	
+	<select id="selectDisabledPrjUsersByPno" resultMap="prjUserMap">
+		select b.*,
+		       a.user_nm
+		  from users a, prj_user b, project c, com_code d
+		 where b.prj_no = #{prjNo}
+		   and c.prj_no = b.prj_no
+		   and b.user_id = a.user_id
+           and b.prj_role = d.com_code
+		   and b.stt_code = 'd'
+		 order by d.com_code_desc asc
+	</select>
+	
+	<select id="selectWorkersByPno" resultMap="prjUserMap">
+		select b.*,
+		       a.user_nm
+		  from users a, prj_user b, project c
+		 where b.prj_no = #{prjNo}
+		   and c.prj_no = b.prj_no
+		   and b.user_id = a.user_id
+		   and b.stt_code == 'e'
+		 order by b.prj_role asc
+	</select>
+	
+	<select id="selectPrjUserByUno" resultMap="prjUserMap">
+		select *
+		from prj_user
+		where prj_no = #{prjNo}
+		  and user_id = #{userId}
+		  and stt_code != 'd'
+	</select>
+	
+	<update id="insertPrjUser" parameterType="prjUser">
+		insert into
+		prj_user (prj_no, user_id, prj_role, stt_code, bgn_dt
+<!-- 			<if test="leader != null and leader != '' "> -->
+<!-- 		 		, leader -->
+<!-- 			</if> -->
+		)
+		values (#{prjNo}, #{userId}, #{prjRole}, 'w', sysdate
+<!-- 			<if test="leader != null and leader != '' "> -->
+<!-- 		 		, #{leader} -->
+<!-- 			</if> -->
+		)
+	</update>
+	
+	<update id="updatePrjUser" parameterType="prjUser">
+		update prj_user
+		set stt_code = 'e', end_dt = sysdate
+	<if test="prjRole != null and prjRole != '' ">
+ 		, prj_role = #{prjRole}
+	</if>
+		where prj_no = #{prjNo}
+		  and user_id = #{userId}
+	</update>
+	
+	<update id="updatePrjUserRole" parameterType="prjUser">
+		update prj_user
+		   set prj_role = #{prjRole}, end_dt = sysdate
+	 	 where prj_no = #{prjNo}
+		   and user_id = #{userId}
+	</update>
+
+	<update id="enabled">
+		update prj_user
+		set stt_code = 'e'
+		where prj_no = #{prjNo}
+		and user_id = #{userId} 
+	</update>
+
+
+	<update id="deletePrjUser" parameterType="prjUser">
+		update prj_user
+		set stt_code = 'd', end_dt = sysdate
+		where prj_no = #{prjNo}
+		  and user_id = #{userId}
+	</update>
+	
+	<update id="deleteAllPrjUser">
+		update prj_user
+		set stt_code = 'd', end_dt = sysdate
+		where prj_no = #{prjNo}
+	</update>
+	
+
+
+	<select id="selectPrjUserSeqNext" resultType="int">
+		select prjUser_seq.nextval as prjNo from dual
+	</select>
+	
+</mapper>

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:batch="http://www.springframework.org/schema/batch"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/batch http://www.springframework.org/schema/batch/spring-batch.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+
+	<bean id="jobRepository"
+		class="org.springframework.batch.core.repository.support.MapJobRepositoryFactoryBean"
+		p:transactionManager-ref="transactionManager" />
+	<bean id="jobLauncher"
+		class="org.springframework.batch.core.launch.support.SimpleJobLauncher"
+		p:jobRepository-ref="jobRepository" 
+		/>
+	
+	<bean id="jobListener" class="kr.or.pms.batch.JobListener" />
+	<bean id="backupDbTask" 
+		  class="kr.or.pms.batch.BackupDbTasklet"
+		  p:dbManager-ref="dbManager"
+	/>
+	<bean id="recoverDbTask" 
+		  class="kr.or.pms.batch.RecoverDbTasklet"
+		  p:dbManager-ref="dbManager"
+	/>
+
+	<batch:job id="backupDbJob">
+		<batch:step id="backupDbStep">
+			<batch:tasklet ref="backupDbTask" />
+		</batch:step>
+		<batch:listeners>
+			<batch:listener ref="jobListener" />
+		</batch:listeners>
+	</batch:job>
+
+	<batch:job id="recoverDbJob">
+		<batch:step id="recoverDbStep">
+			<batch:tasklet ref="recoverDbTask" />
+		</batch:step>
+		<batch:listeners>
+			<batch:listener ref="jobListener" />
+		</batch:listeners>
+	</batch:job>
+
+	<bean id="backupDbRuntime" 
+	      class="kr.or.pms.batch.BackupDbRuntime"
+		  p:jobLauncher-ref="jobLauncher" 
+		  p:job-ref="backupDbJob" />
+		  
+	<bean id="recoverDbRuntime" 
+	      class="kr.or.pms.batch.RecoverDbRuntime"
+		  p:jobLauncher-ref="jobLauncher" 
+		  p:job-ref="recoverDbJob" />
+		  
+
+</beans>
+
+
+
+
+
+
+
+

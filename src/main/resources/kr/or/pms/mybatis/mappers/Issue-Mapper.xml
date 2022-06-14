@@ -1,0 +1,342 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Issue-Mapper">
+
+	<resultMap type="issue" id="issueMap">
+		<result property="issueNo" column="ISSUE_NO"/>
+		<result property="gradeCode" column="GRADE_CODE"/>
+		<result property="prjNo" column="PRJ_NO"/>
+		<result property="issueRegister" column="ISSUE_REGISTER"/>
+		<result column="REGISTER" property="register"/>
+		<result property="content" column="CONTENT"/>
+		<result property="sttCode" column="STT_CODE"/>
+		<result property="attachNo" column="ATTACH_NO"/>
+		<result property="replyNo" column="REPLY_NO"/>
+		<result property="title" column="TITLE"/>
+		<result property="bookmarkNo" column="BOOKMARK_NO"/>
+		<result property="regDt" column="REG_DT"/>
+		<result property="prjNm" column="Prj_Nm"/>
+		<!-- 프로젝트 타이틀 담는용도 -->
+		<result property="bookmarkTitle" column="BMK_TITLE"/>
+		<!-- 이슈 참조자 등록 용 -->
+		<result property="userId" column="user_id"/>
+		<result property="userNm" column="user_nm"/>
+		<!-- 이슈 등록 시 관련 일감 등록 용 -->
+		<result property="workNo" column="WORK_NO"/>
+		<result property="workTitle" column="WORK_TITLE"/>
+	</resultMap>
+
+	<resultMap type="reply" id="replyMap">
+		<result column="REPLY_NO" property="replyNo"/>
+		<result column="REPLY_SEQ" property="replySeq"/>
+		<result column="UP_REPLY_NO" property="upReplyNo"/>
+		<result column="UP_REPLY_SEQ" property="upReplySeq"/>
+		<result column="CONTENT" property="content"/>
+		<result column="URL" property="url"/>
+		<result column="REGISTER" property="register"/>
+		<result column="REG_DT" property="regDt"/>
+		<result column="DEL_DT" property="delDt"/>
+		<result column="UPD_DT" property="updDt"/>
+		<result column="STT_CODE" property="sttCode"/>
+		<result column="user_nm" property="userNm"/>
+	</resultMap>
+
+
+	<sql id="search">
+		<if test="searchType == 'tcwd'.toString()">
+			 and ISSUE_REGISTER like '%'||#{keyword}||'%'
+			 and content like '%'||#{keyword}||'%'
+			 and title like '%'||#{keyword}||'%'
+			 and work_Title like '%'||#{keyword}||'%'
+		</if>
+		<if test="searchType == 't'.toString()">
+			and TITLE like '%'||#{keyword}||'%'
+		</if>
+		<if test="searchType == 'w'.toString()">
+			and ISSUE_REGISTER like '%'||#{keyword}||'%'
+		</if>
+		<if test="searchType == 'c'.toString()">
+			and CONTENT like '%'||#{keyword}||'%'
+		</if>
+		<if test="searchType == 'd'.toString()">
+			and WORK_TITLE like '%'||#{keyword}||'%'
+		</if>
+		<if test="searchType == 'n'.toString()">
+			and b.WORK_No = #{keyword}
+		</if>
+	</sql>
+
+	<select id="selectPrjName" resultMap="issueMap">
+		select Prj_Nm
+		from project
+		where prj_no = #{prjNo}
+	</select>
+	<!-- 북마크 이름 조회 쿼리 -->
+  	<select id="selectPrjBookMarkTitleByBmkNo" resultMap="issueMap">
+		select 
+       		   a.bmk_title
+		  from bookmark a, issue b
+		 where b.bookmark_no = a.bookmark_no
+		   and b.bookmark_no = #{bookmarkNo}
+		   and prj_no = #{prjNo}
+	</select> 
+	
+	<select id="selectDashBoardIssue" parameterType="str" resultMap="issueMap">
+		select
+			   i.*,
+			   U.User_Nm,
+			   p.prj_nm
+			from
+			   issue i
+			inner join users u on
+			   I.Issue_Register = U.User_Id
+			inner join project p on
+			   i.prj_no = p.prj_no
+			inner join prj_user pu on
+			   pu.user_id =#{userId}
+			   and i.prj_no = pu.prj_no 
+			<![CDATA[
+			where
+			   rownum <= 3 ]]>
+			order by
+			   i.reg_dt desc
+	</select>
+	
+	<select id="selectProjectHomeIssueByPno" parameterType="int" resultMap="issueMap">
+		select a.*,
+		       b.user_nm,
+		       c.prj_nm
+		  from issue a, users b, project c
+		 where a.prj_no = #{prjNo}
+		   and a.prj_no = c.prj_no
+		   and a.issue_register = b.user_id
+		   <![CDATA[
+		   and rownum <= 5
+		   ]]>
+		 order by a.reg_dt desc
+	</select>
+	
+	<select id="countUnresolvedIssue" parameterType="int" resultType="int">
+		select count (*)
+		  from issue
+		 where prj_no = #{prjNo}
+		   and stt_code = 'open'
+	</select>
+	
+ 	<select id="selectAllPrjBookMarkTitleByPrjNo" resultMap="issueMap">
+		select 
+       		   bmk_title, bookmark_no
+		  from bookmark a
+		 where prj_no = #{prjNo}
+		   and stt_code != 'del'
+		 order by bmk_title asc
+	</select> 
+	
+	<select id="selectIssueUserName" resultMap="issueMap">
+		select user_nm
+		  from users
+		 where issue_register = #{issueRegister}
+	</select>
+
+	
+	<select id="selectIssueList" resultMap="issueMap">
+		select 			 b.*, a.user_nm, C.Bmk_Title, d.work_title
+		from 			 issue b
+		right outer join users a on (a.user_id = B.Issue_Register)
+		left outer join  bookmark c on (B.Bookmark_No = C.Bookmark_No)
+        left outer join work d on(B.Work_No = d.work_no)
+		where			 b.prj_no = #{prjNo}
+ 		and				 b.stt_code like '%'||#{sttCode}||'%'
+ 		and 			 b.grade_code like '%'||#{gradeCode}||'%'
+  		 <include refid="search"/>
+		order by 		b.issue_no desc
+	</select>
+	
+	<select id="countTotalIssues" resultType="int">
+		select 			 count(*)
+		from 			 issue b
+		right outer join users a on (a.user_id = B.Issue_Register)
+		left outer join  bookmark c on (B.Bookmark_No = C.Bookmark_No)
+        left outer join work d on(B.Work_No = d.work_no)
+		where			 b.prj_no = #{prjNo}
+ 		and				 b.stt_code like '%'||#{sttCode}||'%'
+ 		and 			 b.grade_code like '%'||#{gradeCode}||'%'
+   		 <include refid="search"/>
+	</select>
+	
+	<update id="updateCloseIssue" parameterType="issue">
+		update issue
+		   set stt_code = 'close',
+		   	   end_dt = sysdate 
+		 where issue_no = #{issueNo}
+		   and prj_no = #{prjNo}
+	</update>
+	
+	<update id="updateOpentIssue" parameterType="issue">
+		update issue
+		   set stt_code = 'open'
+		 where issue_no = #{issueNo}
+		   and prj_no = #{prjNo}
+	</update>
+	
+	<select id="selectProjectMember" parameterType="int" resultMap="issueMap">
+<!-- 		select user_id
+          from PRJ_USER
+         where prj_no = #{prjNo} -->
+		select user_nm, user_id
+		  from users
+		 where user_id in (select user_id
+		                     from prj_user
+		                    where prj_no = #{prjNo})
+	</select>
+	
+	<update id="insertReferencedMemberByProjectIssue" parameterType="java.util.HashMap">
+		insert 
+		  into issue_user
+			  (issue_no,user_id)
+		values
+			  (#{issueNo}, #{userId})
+	</update>
+	
+	<select id="selectRefMemberList" parameterType="int" resultMap="issueMap">
+		select iu.* , u.user_nm
+		  from issue_user iu
+	inner join users u 
+		    on iu.user_Id = u.user_Id
+		 where iu.issue_no = #{issueNo}
+	</select>
+	
+	<select id="selectRefMembers" parameterType="int" resultMap="issueMap">
+		select user_id
+		  from issue_user
+		 where issue_no = #{issueNo}
+	</select>
+<!-- 	
+	<select id="selectRefMembers" parameterType="int" resultMap="issueMap">
+		select user_id
+		  from issue_user
+		 where iu.issue_no = #{issueNo}
+	</select> -->
+	
+	<update id="insertIssue" parameterType="issue">
+		insert 
+		  into issue
+		       (issue_no,GRADE_CODE,PRJ_NO,ISSUE_REGISTER,CONTENT,STT_CODE,WORK_NO,
+		        REPLY_NO,TITLE,REG_DT,BOOKMARK_NO)
+		values (#{issueNo},#{gradeCode},#{prjNo},#{issueRegister},#{content},#{sttCode},#{workNo},
+				reply_no_seq.nextVal,#{title},sysdate,#{bookmarkNo})     
+	</update>
+	
+	<select id="issueNoSeq" resultType="int">
+		select ISSUE_SEQ.NEXTVAL as issueNo from dual
+	
+	</select>
+	
+	<select id="selectIssueByIssueeNo" parameterType="int" resultMap="issueMap">
+		select a.* , u.user_nm
+		  from issue a
+	inner join users u 
+		    on A.Issue_Register = u.user_Id
+		 where issue_No = #{issueNo}
+		   and prj_no = #{prjNo} 
+	</select>
+	
+	<update id="updateIssueContent" parameterType="issue">
+		update issue
+		   set CONTENT = #{content}
+		 where issue_no = #{issueNo}
+		   and prj_no = #{prjNo}
+	</update>
+	
+	<update id="updateIssueTitle" parameterType="issue">
+		update issue
+		   set TITLE = #{title}
+		 where issue_no = #{issueNo}
+		   and prj_no = #{prjNo}
+	</update>
+
+	<update id="updateIssueGradeCode" parameterType="issue"> 
+		update issue
+		   set GRADE_CODE = #{gradeCode}
+		 where issue_no = #{issueNo}
+		   and prj_no = #{prjNo}
+	</update>
+
+<!-- ===========================================================================  -->
+	
+	<!-- Reply -->
+	<select id="selectReplyListByIssueNo" parameterType="int" resultMap="replyMap">
+		select a.*, b.user_nm as user_nm
+		  from issue c
+	inner join reply a on (c.reply_no = a.reply_no)
+	inner join users b on (b.user_id = a.register)
+	 	 where issue_no = #{issueNo}
+	 	   and a.stt_code != 'del' 
+	  order by a.REG_DT asc
+<!-- 	   select a.* 
+	     from reply a, issue b
+        where b.REPLY_NO = a.REPLY_NO
+		  and b.issue_NO = #{issueNo}
+          and a.stt_code != 'del'
+		order by a.REG_DT asc -->
+	</select>
+	
+	<update id="insertIssueReply">
+		insert into reply
+		(reply_no,reply_seq,content,url,register,reg_dt,stt_code)
+		values
+		(#{replyNo},reply_seq_seq.nextval,#{content},'url',#{register},sysdate,'used')    
+	</update>
+	
+	<update id="updateIssueReply" parameterType="reply">
+		update reply 
+		set 
+		content=#{content},
+		upd_dt=sysdate
+		where reply_seq=#{replySeq}		
+	</update>	
+
+	<update id="deleteIssueReply" parameterType="int">
+		update reply 
+		   set stt_code='del',
+			   del_dt=sysdate
+		 where reply_seq=#{replySeq}		
+	</update>
+	
+	<select id="countIssueReply" parameterType="int" resultType="int">
+		select count (*)
+		  from reply
+		 where stt_code !='del'
+		   and reply_no in (select reply_no
+		                    from issue
+		                   where issue_no=#{issueNo})
+	</select>
+	
+	<!-- 일감 정보 가져오기 -->
+	<select id="selectWorkInfoByPrjNo" parameterType="int" resultMap="issueMap">
+		select WORK_NO, WORK_TITLE
+		  from work
+		 where prj_no = #{prjNo}
+	     order by WORK_NO asc
+	</select>
+	
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

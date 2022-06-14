@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Team-Mapper">
+
+	<resultMap type="team" id="teamMap">
+		<result column="team_no" property="teamNo"/>
+		<result column="team_nm" property="teamNm"/>                     
+		<result column="reg_dt" property="regDt"/>                     
+		<result column="del_dt" property="delDt"/>                     
+		<result column="stt_code" property="sttCode"/>                     
+	</resultMap>
+
+
+	<sql id="search">
+		<if test="searchType == 'tnm'.toString()">
+			and team_nm like '%'||#{keyword}||'%'			
+		</if>
+	</sql>
+	
+	<select id="selectSearchTeamList" resultMap="teamMap">
+		select *
+		from team
+		where team_no is not null
+		  and stt_code != 'd'
+		<include refid="search" />
+		order by team_no desc
+	</select>
+	
+	<select id="selectTeamList" resultMap="teamMap">
+		select *
+		from team
+		where team_no is not null
+		  and stt_code != 'd'
+		order by team_no desc
+	</select>
+	
+	<select id="selectSearchTeamListCount" resultType="int">
+		select count(*)
+		from team
+		where team_no is not null
+		  and stt_code != 'd'
+		<include refid="search" />
+		order by team_no desc
+	</select>
+	
+	<select id="selectTeamByTno" resultMap="teamMap">
+		select *
+		from team
+		where team_no = #{teamNo}
+	</select>
+	
+	<update id="insertTeam" parameterType="team">
+		insert into 
+		team
+		(team_no, team_nm, stt_code, reg_dt)
+		values
+		(#{teamNo}, #{teamNm}, 'e', sysdate)
+	</update>
+	
+	<update id="updateTeam" parameterType="team">
+		update team
+		set
+		team_nm = #{teamNm}
+		where team_no = #{teamNo}
+	</update>
+	
+	<update id="deleteTeam">
+		update team
+		set
+		stt_code = 'd', del_dt = sysdate
+		where team_no = #{teamNo}
+	</update>
+	
+	<select id="selectTeamSeqNext" resultType="int">
+		select team_seq.nextval as team_no from dual
+	</select>
+
+</mapper>

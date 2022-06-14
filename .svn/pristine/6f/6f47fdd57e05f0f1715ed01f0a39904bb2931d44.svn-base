@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="User-Mapper">
+
+	<resultMap id="userMap" type="user">
+		<result column="USER_ID" property="userId" />
+		<result column="PWD" property="pwd" />
+		<result column="GENDER_CODE" property="genderCode" />
+		<result column="EMAIL" property="email" />
+		<result column="HP" property="hp" />
+		<result column="ADDR" property="addr" />
+		<result column="BIRTH" property="birth" />
+		<result column="USER_NM" property="userNm" />
+		<result column="PIC_SAVED_NM" property="picSavedNm" />
+		<result column="POSITION_CODE" property="positionCode" />
+		<result column="USER_STT_CODE" property="userSttCode" />
+		<result column="DEPT_CODE" property="deptCode" />
+		<result column="AUTH_GRP_CODE" property="authGrpCode" />
+		<result column="REGDATE" property="regdate" />
+	</resultMap>
+	<resultMap id="recoverPwdMap" type="recoverPwd">
+		<result column="KEY" property="key" />
+		<result column="USER_ID" property="userId" />
+		<result column="PWD" property="pwd" />
+		<result column="REGIST_DT" property="registDt" />
+	</resultMap>
+	
+	
+	<!-- 로그인시 필요한 유저 정보 -->
+	<select id="selectUserForLogin" parameterType="str" resultMap="userMap">
+		select
+			user_id,
+		    pwd,
+		    user_stt_code,
+		    auth_grp_code
+		from users
+		where user_id=#{user_id}
+	</select>
+	<!-- 회원번호 찾기 -->
+	<select id="selectUserIdByEmail" parameterType="str" resultType="str">
+		select
+		user_id
+		from users
+		where email=#{email}
+	</select>
+	<!-- 회원 이메일 찾기 -->
+	<select id="selectEmailById" parameterType="str" resultType="str">
+		select email
+		from users
+		where user_id=#{userId}
+	</select>
+	<!-- 비밀번호 변경 시작 -->
+	<update id="insertRecoverKey" parameterType="recoverPwd">
+		merge into recover_pwd 
+		using dual
+		on (user_id = #{userId})
+		when not matched then
+			insert (user_id, key)
+			values (#{userId}, #{key})
+		when matched then
+			update 
+			   set key = #{key}
+	</update>
+	<select id="selectUserIdByRecoverKey" parameterType="str" resultType="str">
+		select
+		user_id
+		from recover_pwd
+		where key=#{key}
+	</select>
+	<update id="updatePwd" parameterType="recoverPwd">
+		update users
+		set
+		pwd=#{pwd}
+		where user_id=#{userId}
+	</update>
+	<update id="deleteRecoverKey" parameterType="str">
+		delete from recover_pwd
+		where user_id=#{userId}
+	</update>
+	<!-- 비밀번호 변경 끝 -->
+	
+	
+	<select id="selectUserListActive" resultMap="userMap">
+		select
+		*
+		from 
+		users 
+		where user_stt_code = '1'
+		order by regDate desc
+	</select>
+	
+	<select id="selectUserList" resultMap="userMap">
+		select
+		*
+		from 
+		users
+		order by regDate desc
+	</select>
+
+	<select id="selectUserListCount" resultType="int">
+		select
+		count(*)
+		from
+		users
+		order by regDate desc
+	</select>
+
+	<select id="selectUserListActiveCount" resultType="int">
+		select
+		count(*)
+		from
+		users
+		order by regDate desc
+	</select>
+
+ 	<sql id="search">
+		<if test="searchType == 'i'.toString()">
+			and id like '%'||#{keyword}||'%'
+		</if>
+		<if test="searchType == 'p'.toString()">
+			and phone like '%'||#{keyword}||'%'
+		</if>
+		<if test="searchType == 'e'.toString()">
+			and email like '%'||#{keyword}||'%'
+		</if>
+		<if test="searchType == 'n'.toString()">
+			and USER_NM like '%'||#{keyword}||'%'
+		</if>
+	</sql> 
+	<select id="selectSearchUserList" resultMap="userMap">
+		select
+		*
+		from users
+		where user_id is not null
+		<include refid="search" />
+		order by regDate desc
+	</select> 
+ 	<select id="selectSearchUserListCount" resultType="int">
+		select
+		count(*)
+		from users
+		where user_id is not null
+		and user_stt_code = '1'
+		<include refid="search" />
+	</select> 
+
+	<select id="selectUserById" parameterType="str" resultMap="userMap">
+		select
+			user_id,
+		    gender_code,
+		    email,
+		    hp,
+		    addr,
+		    birth,
+		    user_nm,
+		    pic_saved_nm,
+		    position_code,
+		    user_stt_code,
+		    dept_code,
+		    auth_grp_code,
+		    regdate
+		from users
+		where user_id=#{user_id}
+	</select>
+
+	<select id="selectUserNmById" parameterType="str" resultType="str">
+		select
+		    user_nm
+		from users
+		where user_id=#{user_id}
+	</select>
+	
+	<select id="countUserInDept" parameterType="str" resultType="int">
+		select
+		count(user_id)
+		from users
+		where dept_code = #{deptCode}
+	</select>
+	
+	<select id="selectUserIdNext" resultType="str">
+		select
+		max(user_id + 1)
+		from users
+		where user_id != 'admin'
+	</select>
+ 
+	<update id="insertUser" parameterType="user">
+		INSERT INTO users (
+						    user_id,
+						    pwd,
+						    gender_code,
+						    email,
+						    hp,
+						    addr,
+						    birth,
+						    user_nm,
+						    position_code,
+						    user_stt_code,
+						    dept_code,
+						    auth_grp_code,
+						    regdate
+						) VALUES (
+						    #{userId},
+						    #{pwd},
+						    #{genderCode},
+						    #{email},
+						    #{hp},
+						    #{addr},
+						    #{birth},
+						    #{userNm},
+						    #{positionCode},
+						    #{userSttCode},
+						    #{deptCode},
+						    #{authGrpCode},
+						    sysdate
+						)
+	</update>
+	
+ 
+	<update id="insertUserList" parameterType="java.util.List">
+      <foreach collection="list" item="item" separator=" " open="INSERT ALL" close="SELECT * FROM DUAL">
+		  INTO users (
+					    user_id,
+					    pwd,
+					    gender_code,
+					    email,
+					    hp,
+					    addr,
+					    birth,
+					    user_nm,
+					    position_code,
+					    user_stt_code,
+					    dept_code,
+					    auth_grp_code,
+					    regdate
+					) VALUES (
+					    #{item.userId},
+					    #{item.pwd},
+					    #{item.genderCode},
+					    #{item.email},
+					    #{item.hp},
+					    #{item.addr},
+					    #{item.birth},
+					    #{item.userNm},
+					    #{item.positionCode},
+					    #{item.userSttCode},
+					    #{item.deptCode},
+					    #{item.authGrpCode},
+					    sysdate
+					)
+	  </foreach>
+	</update>
+	
+ 	<update id="updateUser" parameterType="user">
+		update users
+		set
+		    gender_code	=	    #{genderCode},
+		    email	=	    #{email},
+		    hp	=	    #{hp},
+		    addr	=	    #{addr},
+		    birth	=	    #{birth},
+		    user_nm	=	    #{userNm},
+		    position_code	=	    #{positionCode},
+		    user_stt_code	=	    #{userSttCode},
+		    dept_code	=	    #{deptCode},
+		    auth_grp_code	=	#{authGrpCode}
+
+		where user_id=#{userId}
+	</update>
+	
+ 	<update id="updateUserFromMyPage" parameterType="user">
+		update users
+		set
+		    pic_saved_nm	=	    #{picSavedNm},
+		    email	=	    #{email},
+		    hp	=	    #{hp}
+		where user_id=#{userId}
+	</update>
+
+<!--	<update id="deleteUser" parameterType="str">
+		delete
+		from users
+		where user_id=#{user_id}
+	</update>
+
+	<update id="enabledUser">
+		update users
+		set enabled=#{enabled}
+		where
+		user_id=#{user_id}
+	</update> -->
+
+</mapper>

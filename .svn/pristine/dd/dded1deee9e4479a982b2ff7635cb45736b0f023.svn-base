@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="Favorites-Mapper">
+
+	<resultMap id="favoritesMap" type="favorites">
+		<result column="user_id" property="userId" />
+		<result column="prj_no" property="prjNo" />
+		<result column="prj_nm" property="prjNm" />
+	</resultMap>
+
+	
+	<select id="selectFavoritesListById" parameterType="str" resultMap="favoritesMap">
+		select a.*,
+			   b.prj_nm
+		  from favorites a, project b
+		 where a.user_id = #{userId}
+		   and a.prj_no = b.prj_no
+	</select>
+
+ 	<update id="insertFavorites" parameterType="favorites">
+ 		insert into
+ 		favorites (user_id, prj_no)
+ 		values (#{userId}, #{prjNo})
+ 	</update>
+
+	<delete id="deleteFavorites" parameterType="favorites">
+		delete favorites
+		 where user_id = #{userId}
+		   and prj_no = #{prjNo}
+	</delete>
+
+
+</mapper>

@@ -1,0 +1,231 @@
+package kr.or.pms.dto;
+
+import java.util.Date;
+import java.util.Map;
+
+public class UserVO {
+	
+	private String userId;
+	private String pwd;
+	private String genderCode = "N";
+	private String email;
+	private String hp = "-";
+	private String addr = "-";
+	private String birth = "-";
+	private String userNm;
+	private String picSavedNm;
+	private String positionCode = "0";
+	private String userSttCode = "1";
+	private String deptCode = "-1";
+	private String authGrpCode = "ROLE_USER";
+	private Date regdate;
+	
+	private String authGrp;
+	private String gender;
+	private String position;
+	private String userStt;
+	private String dept;
+
+
+	public UserVO() {}
+	public UserVO(String id, String pwd) {
+		super();
+		this.userId = id;
+		this.pwd = pwd;
+	}
+	public String getUserId() {
+		return userId;
+	}
+	public void setUserId(String userId) {
+		this.userId = userId;
+	}
+	public String getPwd() {
+		return pwd;
+	}
+	public void setPwd(String pwd) {
+		this.pwd = pwd;
+	}
+	public String getGenderCode() {
+		return genderCode;
+	}
+	public void setGenderCode(String genderCode) {
+		if(genderCode == null) {
+			this.genderCode = "N";
+		}
+		this.genderCode = genderCode;
+	}
+	public String getEmail() {
+		return email;
+	}
+	public void setEmail(String email) {
+		this.email = email;
+	}
+	public String getHp() {
+		return hp;
+	}
+	public void setHp(String hp) {
+		if(hp == null || hp.equals(""))	{
+			this.hp = "--";}
+		this.hp = hp.replaceAll(",", "-");
+	}
+	public String getAddr() {
+		return addr;
+	}
+	public void setAddr(String addr) {
+		if(addr == null || addr.equals("")) {addr = "-";}
+		this.addr = addr;
+	}
+	public String getBirth() {
+		return birth;
+	}
+	public void setBirth(String birth) {
+		if(birth == null || birth.equals("")) {birth = "-";}
+		this.birth = birth;
+	}
+	public String getUserNm() {
+		return userNm;
+	}
+	public void setUserNm(String userNm) {
+		this.userNm = userNm;
+	}
+		public String getPicSavedNm() {
+			return picSavedNm;
+	}
+	public void setPicSavedNm(String picSavedNm) {
+		this.picSavedNm = picSavedNm;
+	}
+	public String getPositionCode() {
+		return positionCode;
+	}
+	public void setPositionCode(String positionCode) {
+		this.positionCode = positionCode;
+	}
+	
+	public String getUserSttCode() {
+		return userSttCode;
+	}
+	public void setUserSttCode(String userSttCode) {
+		this.userSttCode = userSttCode;
+	}
+	public String getDeptCode() {
+		return deptCode;
+	}
+	public void setDeptCode(String deptCode) {
+		this.deptCode = deptCode;
+	}
+	public String getAuthGrpCode() {
+		return authGrpCode;
+	}
+	public void setAuthGrpCode(String authGrpCode) {
+		this.authGrpCode = authGrpCode;
+		if(authGrpCode == null) {
+			return;
+		}
+		switch (authGrpCode) {
+		case "ROLE_USER": this.authGrp = "일반 사용자";	break;
+		case "ROLE_MANAGER": this.authGrp = "매니저";	break;
+		case "ROLE_ADMIN": this.authGrp = "관리자";	break;
+		default :;
+		}
+	}
+	
+	public Date getRegdate() {
+		return regdate;
+	}
+	public void setRegdate(Date regdate) {
+		this.regdate = regdate;
+	}
+	public String getGender() {
+		return gender;
+	}
+	public void setGender(String gender) {
+		this.gender = gender;
+	}
+	public String getPosition() {
+		return position;
+	}
+	public void setPosition(String position) {
+		this.position = position;
+	}
+
+	public String getUserStt() {
+		return userStt;
+	}
+	public void setUserStt(String userStt) {
+		this.userStt = userStt;
+	}
+	public String getDept() {
+		return dept;
+	}
+	public void setDept(String dept) {
+		if(dept == null || dept.equals("")) {dept = "-1";}
+		this.dept = dept;
+	}
+	public void setGenderFromComCode(Map<String,ComCodeVO> genderMap) {
+		ComCodeVO comCodeVO = genderMap.get(genderCode);
+		gender = comCodeVO.getNm();
+	}
+	
+	public void setGenderCodeFromComCode(Map<String,ComCodeVO> genderMap) {
+		if(gender == null || gender.equals("")) {
+			genderCode = "-1";
+			return;
+		}
+		ComCodeVO comCodeVO = genderMap.get(gender);
+		genderCode = comCodeVO.getCode();
+		
+	}
+	
+	public void setPositionFromComCode(Map<String,ComCodeVO> positionMap) {
+		ComCodeVO comCodeVO = positionMap.get(positionCode);
+		position = comCodeVO.getNm();
+	}
+	
+	public void setPositionCodeFromComCode(Map<String,ComCodeVO> positionMap) {
+		if(position == null || position.equals("")) {
+			positionCode = "-1";
+			return;
+		}
+		ComCodeVO comCodeVO = positionMap.get(position);
+		positionCode = comCodeVO.getCode();
+	}
+	
+	public void setUserSttFromComCode(Map<String,ComCodeVO> sttMap) {
+		ComCodeVO comCodeVO = sttMap.get(userSttCode);
+		userStt = comCodeVO.getNm();
+	}
+	
+	public void setUserSttCodeFromComCode(Map<String,ComCodeVO> sttMap) {
+		if(userStt == null || userStt.equals("")) {
+			userSttCode = "-1";
+			return;
+		}
+		ComCodeVO comCodeVO = sttMap.get(userStt);
+		userSttCode = comCodeVO.getCode();
+	}
+	
+	public void setDeptFromComCode(Map<String,ComCodeVO> deptMap) {
+		ComCodeVO comCodeVO = deptMap.get(deptCode);
+		dept = comCodeVO.getNm();
+	}
+	
+	public void setDeptCodeFromComCode(Map<String,ComCodeVO> deptMap) {
+		if(dept == null || dept.equals("")) {
+			deptCode = "-1";
+			return;
+		}
+		ComCodeVO comCodeVO = deptMap.get(dept);
+		deptCode = comCodeVO.getCode();
+	}
+	
+	public String getAuthGrp() {
+		return authGrp;
+	}
+	
+	public void setAuthGrp(String authGrp) {
+		this.authGrp = authGrp;
+	}
+	
+	
+}
+

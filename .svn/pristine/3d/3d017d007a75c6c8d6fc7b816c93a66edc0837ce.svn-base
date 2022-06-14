@@ -1,0 +1,399 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Notice-Mapper">
+
+	<resultMap id="noticeMap" type="notice">
+		<result column="NTC_NO" property="ntcNo" />
+		<result column="TITLE" property="title" />
+		<result column="CONTENT" property="content" />
+		<result column="REGISTER" property="register" />
+		<result column="VIEW_CNT" property="viewCnt" />
+		<result column="REG_DT" property="regDt" />
+		<result column="UPD_DT" property="updDt" />
+		<result column="ATTACH_NO" property="attachNo" />
+		<result column="REPLY_NO" property="replyNo" />
+		<result column="PRJ_NO" property="prjNo" />
+		<result column="STT_CODE" property="sttCode" />
+	</resultMap>
+
+	<resultMap id="attachMap" type="attach">
+		<result column="ATTACH_NO" property="attachNo" />
+		<result column="ATTACH_SEQ" property="attachSeq" />
+		<result column="ATTACH_PATH" property="attachPath" />
+		<result column="NM" property="nm" />
+		<result column="STRORED_NM" property="stroredNm" />
+		<result column="EXT" property="ext" />
+		<result column="URL" property="url" />
+		<result column="FILESIZE" property="fileSize" />
+		<result column="DOWN_CNT" property="downCnt" />
+		<result column="REG_DT" property="regDt" />
+		<result column="REGISTER" property="register" />
+		<result column="UPD_DT" property="updDt" />
+		<result column="UPDATER" property="updater" />
+	</resultMap>
+
+	<resultMap id="replyMap" type="reply">
+		<result column="REPLY_NO" property="replyNo" />
+		<result column="REPLY_SEQ" property="replySeq" />
+		<result column="UP_REPLY_NO" property="upReplyNo" />
+		<result column="UP_REPLY_SEQ" property="upReplySeq" />
+		<result column="CONTENT" property="content" />
+		<result column="URL" property="url" />
+		<result column="REGISTER" property="register" />
+		<result column="REG_DT" property="regDt" />
+		<result column="DEL_DT" property="delDt" />
+		<result column="UPD_DT" property="updDt" />
+		<result column="STT_CODE" property="sttCode" />
+	</resultMap>
+	
+	<resultMap type="prjUser" id="prjUserMap">
+		<result column="prj_no" property="prjNo"/>
+		<result column="user_id" property="userId"/>
+		<result column="user_nm" property="userNm"/>
+		<result column="leader" property="leader"/>
+		<result column="prj_role" property="prjRole"/>
+		<result column="stt_code" property="sttCode"/>
+		<result column="bgn_dt" property="bgnDt"/>
+		<result column="end_dt" property="endDt"/>
+	</resultMap>
+	
+	<resultMap id="userMap" type="user">
+		<result column="USER_ID" property="userId" />
+		<result column="PWD" property="pwd" />
+		<result column="GENDER_CODE" property="genderCode" />
+		<result column="EMAIL" property="email" />
+		<result column="HP" property="hp" />
+		<result column="ADDR" property="addr" />
+		<result column="BIRTH" property="birth" />
+		<result column="USER_NM" property="userNm" />
+		<result column="PIC_SAVED_NM" property="picSavedNm" />
+		<result column="POSITION_CODE" property="positionCode" />
+		<result column="USER_STT_CODE" property="userSttCode" />
+		<result column="DEPT_CODE" property="deptCode" />
+		<result column="AUTH_GRP_CODE" property="authGrpCode" />
+		<result column="REGDATE" property="regdate" />
+	</resultMap>
+
+	<sql id="search">
+		<if test="searchType == 't'.toString()">
+			and title like '%'||#{keyword}||'%'			
+		</if>
+		<if test="searchType == 'w'.toString()">
+			and register like '%'||#{keyword}||'%'			
+		</if>
+		<if test="searchType == 'c'.toString()">
+			and content like '%'||#{keyword}||'%'			
+		</if>
+		<if test="searchType == 'tc'.toString()">
+			and (
+			title like '%'||#{keyword}||'%'
+			or
+			content like '%'||#{keyword}||'%'						
+			)			
+		</if>
+		<if test="searchType == 'cw'.toString()">
+			and (
+			register like '%'||#{keyword}||'%'
+			or
+			content like '%'||#{keyword}||'%'						
+			)			
+		</if>
+		<if test="searchType == 'tcw'.toString()">
+			and (
+			title like '%'||#{keyword}||'%'
+			or
+			register like '%'||#{keyword}||'%'
+			or
+			content like '%'||#{keyword}||'%'						
+			)			
+		</if>
+	</sql>
+	
+	<select id="selectAllUser" resultMap="prjUserMap">
+		select *
+		  from prj_user
+		 where prj_no = #{prjNo}
+	</select>
+	
+	<select id="selectAllUsers" resultType="str">
+		select user_id
+		  from users
+	</select>
+	
+	<select id="selectSearchNoticeListNews" resultMap="noticeMap">
+		select
+		*
+		from
+		notice
+		where ntc_no is not null
+		  and prj_no is null 
+		  and stt_code = 1 			  	
+		<include refid="search" />
+		order by ntc_no desc
+	</select>
+	
+	<select id="selectSearchNoticeListNtc" resultMap="noticeMap">
+		select
+		*
+		from
+		notice
+		where ntc_no is not null
+		  and prj_no is null  
+		  and stt_code = 2 				  	
+		<include refid="search" />
+		order by ntc_no desc
+	</select>
+	
+	<select id="selectSearchNoticeListEtc" resultMap="noticeMap">
+		select
+		*
+		from
+		notice
+		where ntc_no is not null
+		  and prj_no is null 
+		  and stt_code = 3 	 			  	
+		<include refid="search" />
+		order by ntc_no desc
+	</select>
+	
+	<select id="selectProjectSearchNoticeList" resultMap="noticeMap">
+		select
+		*
+		from
+		notice
+		where ntc_no is not null
+		  and prj_no = #{prjNo}  			  	
+		<include refid="search" />
+		order by ntc_no desc
+	</select>
+	
+	<select id="selectSearchNoticeListCountNews"  resultType="int">
+		select
+		count(*)
+		from
+		notice
+		where ntc_no is not null
+		  and prj_no is null  	
+		  and stt_code = 1 			  	
+		<include refid="search" />
+		order by ntc_no desc
+	</select>
+	
+	<select id="selectSearchNoticeListCountNtc"  resultType="int">
+		select
+		count(*)
+		from
+		notice
+		where ntc_no is not null
+		  and prj_no is null 
+		  and stt_code = 2 	 			  	
+		<include refid="search" />
+		order by ntc_no desc
+	</select>
+	
+	<select id="selectSearchNoticeListCountEtc"  resultType="int">
+		select
+		count(*)
+		from
+		notice
+		where ntc_no is not null
+		  and prj_no is null  
+		  and stt_code = 3 				  	
+		<include refid="search" />
+		order by ntc_no desc
+	</select>
+	
+	<select id="selectProjectSearchNoticeListCount"  resultType="int">
+		select
+		count(*)
+		from
+		notice
+		where ntc_no is not null
+		  and prj_no = #{prjNo}			  	
+		<include refid="search" />
+		order by ntc_no desc
+	</select>
+	
+	<select id="selectNoticeByNtcNo"  resultMap="noticeMap">
+		select * 
+		from notice 
+		where ntc_no=#{ntcNo}
+	</select>
+	
+	<select id="selectNoticeByImage"  resultMap="noticeMap">
+		select * 
+		from notice 
+		where content like '%'||#{keyword}||'%' 
+	</select>
+	
+	<update id="insertNotice" parameterType="notice">
+		insert 
+		into 
+		notice(ntc_no,title,register,content,reg_dt,attach_no
+			<if test="sttCode != '0'">
+				,stt_code
+			</if>
+		)
+		values
+		(#{ntcNo},#{title},#{register},#{content},sysdate,#{attachNo}
+			<if test="sttCode != '0'">
+				,#{sttCode}
+			</if>
+		)
+	</update>
+	
+	<update id="insertProjectNotice" parameterType="notice">
+		insert 
+		into 
+		notice(ntc_no,title,register,content,reg_dt,prj_no,attach_no)
+		values
+		(#{ntcNo},#{title},#{register},#{content},sysdate,#{prjNo},#{attachNo})
+	</update>
+	
+	<update id="updateNotice" parameterType="notice">
+		update 
+		notice
+		set 
+		<if test="replyNo != null">
+        	reply_no=#{replyNo},
+ 	   </if>
+		title=#{title}, content=#{content},attach_no=#{attachNo}, upd_dt=sysdate 
+		where ntc_no=#{ntcNo}
+	</update>
+	
+	<update id="deleteNotice" parameterType="int">
+		delete 
+		from notice 
+		where ntc_no=#{ntcNo}
+	</update>
+	
+	<update id="increaseViewCnt" parameterType="int">
+		update 
+		notice 
+		set 
+		view_cnt=view_cnt+1 
+		where ntc_no=#{ntcNo}
+	</update>
+	
+	
+	<select id="selectNoticeSeqNext" resultType="int">
+		select notice_seq.nextval as ntcNo from dual
+	</select>
+	
+	<!-- attach -->
+	
+	<select id="selectAttachNoSeqNext" resultType="int">
+		select attach_no_seq.nextval as attachNo from dual
+	</select>
+	
+	<select id="selectAttachesByAttachNo" resultMap="attachMap">
+		select * 
+		from attach 
+		where attach_no = #{attachNo}
+	</select>	
+	
+	<select id="selectAttachByAttachSeq" resultMap="attachMap">
+		select *
+		from attach
+		where attach_seq=#{attachSeq}
+	</select>
+	
+	<update id="insertAttach">
+		insert into 
+		attach (
+		attach_no,
+		attach_seq,
+		attach_path,
+		nm,
+		strored_nm,
+		ext,
+<!-- 		url, -->
+		filesize,
+		reg_dt,
+		register
+		)
+		values (
+		#{attachNo},
+		attach_seq_seq.nextval,
+		#{attachPath},
+		#{nm},
+		#{stroredNm},
+		#{ext},
+<!-- 		#{url}, -->
+		#{fileSize},
+		sysdate,
+		#{register} 
+		)
+	</update>
+	
+	<update id="deleteAttach">
+		delete from attach where attach_seq = #{attachSeq}
+	</update>
+	
+	<update id="deleteAllAttach">
+		delete 
+		from attach 
+		where attach_no = #{attachNo}
+	</update>
+	
+	<!-- reply -->
+	<select id="selectReplySeqNextValue" resultType="int" >
+		select reply_no_seq.nextval
+		from dual		
+	</select>
+	
+	<select id="selectReplyList" resultMap="replyMap">
+		select *
+		from reply
+		where reply_no=#{replyNo}
+		order by reply_no asc
+	</select>
+	<select id="countReply" resultType="int">
+		select count(reply_no) 
+		from reply
+		where reply_no=#{replyNo}
+	</select>
+	
+	<update id="insertReply" >
+		insert into reply(reply_no,reply_seq,content,url,register,reg_dt,stt_code)
+		values(#{replyNo},reply_seq_seq.nextval,#{content},'url',#{register},sysdate,'used')
+	</update>
+	
+	<update id="updateReply" parameterType="reply">
+		update reply 
+		set 
+		content=#{content},
+		upd_dt=sysdate
+		where reply_seq=#{replySeq}		
+	</update>
+	
+	<update id="deleteReply" parameterType="int">
+		delete from reply
+		where reply_seq=#{replySeq}		
+	</update>
+	
+	<update id="deleteAllReply" parameterType="int">
+		delete from reply
+		where reply_no=#{replyNo}		
+	</update>
+	
+	<update id="insertReplyNoToNotice" parameterType="notice">
+		update notice
+		   set reply_no=#{replyNo}
+		where ntc_no=#{ntcNo}		
+	</update>
+	
+	<select id="selectNewNoticeCount" resultType="int">
+		select count(*)
+		from notice
+		where prj_no = #{prjNo}
+		and reg_dt + 1 > to_date(sysdate)
+	</select>
+	
+	
+</mapper>  
+
+

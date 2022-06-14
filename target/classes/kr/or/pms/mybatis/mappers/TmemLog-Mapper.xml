@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="TmemLog-Mapper">
+
+	<resultMap type="tmemLog" id="tmemLogMap">
+		<result column="tmem_log_no" property="tmemLogNo"/>
+		<result column="team_no" property="teamNo"/>
+		<result column="user_id" property="userId"/>                     
+		<result column="user_nm" property="userNm"/>                     
+		<result column="upd_dt" property="updDt"/>                     
+		<result column="stt_code" property="sttCode"/>                     
+	</resultMap>
+
+
+	<select id="selectTeamMemberLogList" resultMap="tmemLogMap">
+		select * 
+		from tmem_log
+	</select>
+
+	<select id="selectTeamMemberLogsByTno" parameterType="int" resultMap="tmemLogMap">
+		select a.*,
+			   b.user_nm
+		from tmem_log a, users b
+		where team_no = #{teamNo}
+		  and a.user_id = b.user_id
+		order by upd_dt desc
+	</select>
+	
+	<update id="insertTeamMemberLog">
+		insert into
+		tmem_log (tmem_log_no, team_no, user_id, upd_dt, stt_code)
+		values (tmemlog_seq.nextval, #{teamNo}, #{userId}, sysdate, 'i')
+	</update>
+	
+	<update id="deleteTeamMemberLog">
+		insert into
+		tmem_log (tmem_log_no, team_no, user_id, upd_dt, stt_code)
+		values (tmemlog_seq.nextval, #{teamNo}, #{userId}, sysdate, 'o')
+	</update>
+
+	<select id="selectTmemLogSeqNext" resultType="int">
+		select tmemlog_seq.nextval as tmem_log_no from dual
+	</select>
+	
+</mapper>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="HtmlTemp-Mapper">
+	
+	<resultMap type="htmlTemp" id="tempMap">
+		<result column="TEMP_NM" property="tempNm"/>
+		<result column="POSITION" property="position"/>                     
+		<result column="CONTENT" property="content"/>     
+		<result column="TEMP_ORDER" property="tempOrder"/>     
+	</resultMap>
+	
+	<select id="selectHtmlTemp" parameterType="map" resultMap="tempMap">
+		select *
+		from html_temp
+		where temp_nm = #{tempNm}
+		and position = #{position}
+		order by temp_order
+	</select>
+	
+</mapper>

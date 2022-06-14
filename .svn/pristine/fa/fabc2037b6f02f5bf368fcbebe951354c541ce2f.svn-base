@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Push-Mapper">
+
+	<resultMap id="pushMap" type="push">
+		<result column="PUSH_NO" property="pushNo" />
+		<result column="PRJ_NO" property="prjNo" />
+		<result column="RECEIVER" property="receiver" />
+		<result column="URL" property="url" />
+		<result column="REG_DT" property="regDt" />
+		<result column="READ_NY_CODE" property="readNyCode" />
+		<result column="FROM_WHERE" property="fromWhere" />
+		<result column="MESSAGE" property="message" />
+	</resultMap>
+
+	<sql id="search">
+		<if test="searchType == 'y'.toString()">
+			and register like '%'||#{keyword}||'%'
+		</if>
+		<if test="searchType == 'n'.toString()">
+			and content like '%'||#{keyword}||'%'
+		</if>
+	</sql>
+
+	<select id="selectPushList" parameterType="hashmap" resultMap="pushMap">
+  		select * from push where receiver = #{userId}
+	    <if test='cri.searchType != "" and cri.searchType != "A"'>
+			and read_ny_code = #{cri.searchType }
+		</if>
+<!-- 		<if test="cri.searchType == ''">
+			and read_ny_code = 'N'
+		</if>
+ -->
+	     order by reg_dt desc
+	
+		
+	</select>
+
+	<select id="selectPushListCount" parameterType="hashmap" resultType="int">
+		select
+		count(*)
+		from
+		push
+		where receiver = #{userId}
+		<if test='cri.searchType != "" and cri.searchType != "A"'>
+			and read_ny_code = #{cri.searchType }
+		</if>
+		<!-- <if test="cri.searchType == ''">
+			and read_ny_code = 'N'
+		</if> -->
+		order by reg_dt desc
+	</select>
+
+
+	<!-- 메뉴바 알림 리스트 조회 -->
+	<select id="selectMenuPushList" parameterType="str" resultMap="pushMap">
+		select * 
+		  from (select * from push 
+				 where receiver = #{userId}
+				 order by read_ny_code, reg_dt desc)
+<![CDATA[where rownum <= 5]]>
+		
+	</select>
+	
+	<!-- 메뉴바 읽지 않은 알림 갯수 조회 -->
+	<select id="selectReadCodeNCount" parameterType="str" resultType="int">
+	   select count(*)
+		 from push
+		where receiver = #{userId}
+		  and read_ny_code = 'N'
+	</select>
+
+
+	<update id="updateReadCode" parameterType="List">
+		update push
+		set read_ny_code = 'Y'
+		where push_no in
+		<foreach collection="list" item="item" index="i" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</update>
+
+		
+	<update id="insert" parameterType="push">
+		insert into push 
+		(push_no, receiver, url, from_where, message
+			<if test="prjNo != null and prjNo != 0">
+		 		, prj_no
+			</if>
+		)
+		values
+		(push_no_seq.nextval, #{receiver}, #{url}, #{fromWhere}, #{message}
+			<if test="prjNo != null and prjNo != 0">
+		 		, #{prjNo}
+			</if>
+		)
+	</update>
+
+	<update id="delete" parameterType="List">
+			delete from push
+			where push_no in
+		<foreach collection="list" item="item" index="i" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</update>
+
+
+</mapper>  
+
+

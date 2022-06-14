@@ -1,0 +1,214 @@
+package kr.or.pms.util;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
+
+import kr.or.pms.command.CloudDownloadCommand;
+import kr.or.pms.command.CloudModifyCommand;
+import kr.or.pms.dto.AttachVO;
+import kr.or.pms.dto.CloudVO;
+
+
+public class ServerToServerFileIo {
+
+	public static List<AttachVO> getAttachesByUploadFiles(String userId, List<MultipartFile> files) throws Exception {
+		
+		RestTemplate restTemplate = new RestTemplate();
+		LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
+		ResponseEntity<AttachVO[]> response;
+		List<AttachVO> attachList = null;
+		
+		if (!files.isEmpty()) {
+			for (MultipartFile file : files) {
+				map.add("files", file.getResource());
+			}
+		}
+		map.add("register", userId);
+		
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+
+		String uri = "http://192.168.144.16/server/file/attachesUploadFile";
+
+		HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = new HttpEntity<>(map, headers);
+		response = restTemplate.postForEntity(uri, requestEntity, AttachVO[].class);
+		attachList = Arrays.asList(response.getBody());
+		
+		return attachList;
+	}
+	
+	public static String registCloudDirectory(String filePath) throws Exception {
+		RestTemplate restTemplate = new RestTemplate();
+		LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
+		ResponseEntity<String> response;
+		
+		map.add("path", filePath);
+		
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+
+		String uri = "http://192.168.144.16/server/file/registCloudDirectory";
+
+		HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = new HttpEntity<>(map, headers);
+		response = restTemplate.postForEntity(uri, requestEntity, String.class);
+		String result = response.getBody();
+		
+		return result;
+	}
+	
+	public static CloudVO getCloudsByUploadFiles(String userId, MultipartFile file, String filePath) throws Exception {
+		
+		RestTemplate restTemplate = new RestTemplate();
+		LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
+		ResponseEntity<CloudVO> response;
+		CloudVO cloud = null;
+		
+		if (!file.isEmpty()) {
+			map.add("file", file.getResource());
+		}
+		map.add("register", userId);
+		map.add("filePath", filePath);
+		
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+
+		String uri = "http://192.168.144.16/server/file/cloudUploadFile";
+
+		HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = new HttpEntity<>(map, headers);
+		response = restTemplate.postForEntity(uri, requestEntity, CloudVO.class);
+		cloud = response.getBody();
+		
+		return cloud;
+	}
+	
+	public static byte[] getFile(String savedPath, String fileName) throws Exception {
+		RestTemplate restTemplate = new RestTemplate();
+		LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
+		ResponseEntity<byte[]> response;
+		
+		map.add("savedPath", savedPath);
+		map.add("fileName", fileName);
+		
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+
+		String uri = "http://192.168.144.16/server/file/getFile";
+
+		HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = new HttpEntity<>(map, headers);
+		response = restTemplate.postForEntity(uri, requestEntity, byte[].class);
+
+		if (response.getStatusCode() != HttpStatus.OK) {
+			throw new Exception();
+		}
+
+		return response.getBody();
+	}
+	
+	public static String removeFile(String savedPath, String fileName) throws Exception {
+		RestTemplate restTemplate = new RestTemplate();
+		LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
+		ResponseEntity<String> response;
+		
+		map.add("savedPath", savedPath);
+		map.add("fileName", fileName);
+		
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+
+		String uri = "http://192.168.144.16/server/file/removeFile";
+
+		HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = new HttpEntity<>(map, headers);
+		response = restTemplate.postForEntity(uri, requestEntity, String.class);
+
+		if (response.getStatusCode() != HttpStatus.OK) {
+			throw new Exception();
+		}
+		
+		return response.getBody();
+	}
+	
+	public static String removeCloudFile(String savedPath, String fileName) throws Exception {
+		RestTemplate restTemplate = new RestTemplate();
+		LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
+		ResponseEntity<String> response;
+		
+		map.add("savedPath", savedPath);
+		map.add("fileName", fileName);
+		
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+
+		String uri = "http://192.168.144.16/server/file/removeCloudFile";
+
+		HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = new HttpEntity<>(map, headers);
+		response = restTemplate.postForEntity(uri, requestEntity, String.class);
+
+		if (response.getStatusCode() != HttpStatus.OK) {
+			throw new Exception();
+		}
+		
+		return response.getBody();
+	}
+	
+	public static byte[] getZipFile(List<CloudDownloadCommand> downloadInfoList) throws Exception {
+		RestTemplate restTemplate = new RestTemplate();
+		ResponseEntity<byte[]> response;
+		
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+
+		String uri = "http://192.168.144.16/server/file/downloadZip";
+
+		response = restTemplate.postForEntity(uri, downloadInfoList, byte[].class);
+
+		if (response.getStatusCode() != HttpStatus.OK) {
+			throw new Exception();
+		}
+
+		return response.getBody();
+	}
+	
+	public static CloudModifyCommand modifyCloudName(CloudModifyCommand modifyInfoList) throws Exception {
+		RestTemplate restTemplate = new RestTemplate();
+		ResponseEntity<CloudModifyCommand> response;
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+
+		String uri = "http://192.168.144.16/server/file/modifyCloudName";
+
+		response = restTemplate.postForEntity(uri, modifyInfoList, CloudModifyCommand.class);
+
+		if (response.getStatusCode() != HttpStatus.OK) {
+			throw new Exception();
+		}
+
+		return response.getBody();
+	}
+	
+	// 파일 서버 사용하지 않는 파일 scheduler 용
+	public static String removeUnusedFile(Map<String, Object> filePathData) throws Exception {
+		RestTemplate restTemplate = new RestTemplate();
+		ResponseEntity<String> response;
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		
+		String uri = "http://192.168.144.16/server/file/removeUnusedFile";
+		
+		response = restTemplate.postForEntity(uri, filePathData, String.class);
+		
+		String result = response.getBody();
+		
+		return result;
+	}
+	
+}

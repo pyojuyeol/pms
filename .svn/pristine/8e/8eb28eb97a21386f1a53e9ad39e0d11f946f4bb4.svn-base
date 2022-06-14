@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Proceedings-Mapper">
+
+	<resultMap type="proceedings" id="proceedingsMap">
+		<result column="PRCD_NO" property="prcdNo" />
+		<result column="PRJ_NO" property="prjNo" />
+		<result column="REGISTER" property="register" />
+		<result column="TITLE" property="title" />
+		<result column="PDF_CONTENT" property="pdfContent" />
+		<result column="EXCEL_CONTENT" property="excelContent" />
+		<result column="MEET_DE" property="meetDe" />
+		<result column="STT_CODE" property="sttCode" />
+		<result column="REG_DT" property="regDt" />
+		<result column="SUBMIT_DT" property="submitDt" />
+		<result column="APPR_DT" property="apprDt" />
+		<result column="RETURN_DT" property="returnDt" />
+		<result column="CATEGORY" property="category" />
+		<result column="RETURN_MSG" property="returnMsg" />
+	</resultMap>
+	<resultMap type="prcdUser" id="prcdUserMap">
+		<result column="USER_ID" property="userId" />
+		<result column="PRCD_NO" property="prcdNo" />
+		<result column="STT_CODE" property="sttCode" />
+	</resultMap>
+	<resultMap type="str" id="getClobContent">
+    	<result property="pdfContent" column="PDF_CONTENT" jdbcType="CLOB" javaType="java.lang.String"/>
+	</resultMap>
+
+	<sql id="search">
+		<if test="meetDe != '0'.toString()">
+			and meet_de BETWEEN TO_DATE(#{bgnDt}) AND TO_DATE(#{endDt})+1
+		</if>
+		<if test="category == 'rm'.toString()">
+			and (
+			CATEGORY = '받은회의록'
+			or
+			CATEGORY = '내가작성한회의록'
+			)			
+		</if>
+		<if test="category == 'r'.toString()">
+			and CATEGORY = '받은회의록'			
+		</if>
+		<if test="category == 'm'.toString()">
+			and CATEGORY = '내가작성한회의록'			
+		</if>
+		<if test="sttCode == 'ticr'.toString()">
+			and (
+			stt_code = '임시저장'
+			or
+			stt_code = '진행중'
+			or
+			stt_code = '완료'
+			or
+			stt_code = '반려'
+			)			
+		</if>
+		<if test="sttCode == 't'.toString()">
+			and stt_code = '임시저장'			
+		</if>
+		<if test="sttCode == 'i'.toString()">
+			and stt_code = '진행중'			
+		</if>
+		<if test="sttCode == 'c'.toString()">
+			and stt_code = '완료'			
+		</if>
+		<if test="sttCode == 'r'.toString()">
+			and stt_code = '반려'			
+		</if>
+		<if test="searchType == 't'.toString()">
+			and title like '%'||#{keyword}||'%'			
+		</if>
+		<if test="searchType == 'r'.toString()">
+			and register like '%'||#{keyword}||'%'			
+		</if>
+<!-- 		<if test="searchType == 'c'.toString()"> -->
+<!-- 			and content like '%'||#{keyword}||'%'			 -->
+<!-- 		</if> -->
+		<if test="searchType == 'trc'.toString()">
+			and (
+			title like '%'||#{keyword}||'%'
+<!-- 			or -->
+<!-- 			content like '%'||#{keyword}||'%'						 -->
+			or
+			register like '%'||#{keyword}||'%'						
+			)			
+		</if>
+	</sql>
+	
+	<select id="selectProceedingsCriteria" resultMap="proceedingsMap">
+		select
+		*
+		from
+		proceeding
+		where prcd_no is not null
+		  and prj_no = #{prjNo}
+		<include refid="search" />
+		order by reg_dt desc
+	</select>
+
+	<select id="selectProceedingsCriteriaTotalCount"  resultType="int">
+		select
+		count(*)
+		from
+		proceeding
+		where prcd_no is not null
+		  and prj_no = #{prjNo}
+		<include refid="search" />
+		order by reg_dt desc
+	</select>
+	
+	<select id="selectPrcdNoByUserId" resultType="int">
+		select prcd_no
+		  from prcd_user
+		 where user_id = #{userId}
+		   and stt_code = 1
+	</select>
+	
+	<select id="selectUserIdByprcdNo" resultMap="prcdUserMap">
+		select prcd_no, user_id, stt_code
+		  from prcd_user
+		 where prcd_no = #{prcdNo}
+	</select>
+	
+	<select id="selectSttCodeByPrcdNo" resultType="int">
+		select stt_code
+		  from prcd_user
+		   and prcd_no = #{prcdNo}
+	</select>
+	
+	<select id="selectProceedingsByPrcdNo" resultMap="proceedingsMap">
+		select *
+		  from proceeding
+		 where prcd_no = #{prcdNo}
+		   and prj_no = #{prjNo}
+	</select>
+	
+	<select id="selectProceedingsConfirm" resultMap="proceedingsMap">
+		select *
+		  from proceeding
+		 where prcd_no = #{prcdNo}
+		   and prj_no = #{prjNo}
+		   and stt_code != 3
+	</select>
+   
+   <select id="selectProceedingsSeqNext" resultType="int">
+      select prcd_no_seq.nextval as file_down_log_no from dual
+   </select>
+	
+	<update id="insertProceedings" parameterType="proceedings">
+		insert into 
+		proceeding
+		(prcd_no, register, prj_no, title, meet_de, reg_dt, excel_content, pdf_content)
+		values
+		(#{prcdNo},#{register},#{prjNo}, #{title}, #{meetDe}, sysdate,#{excelContent},#{pdfContent})
+	</update>
+		
+	<update id="returnPrcdUser" parameterType="int">
+		update prcd_user 
+		   set stt_code = 3
+		 where prcd_no = #{prcdNo}
+	</update>
+		
+	<update id="returnProceedings" parameterType="int">
+		update proceeding 
+		   set stt_code = 3,
+		       return_dt = sysdate
+		 where prcd_no = #{prcdNo}
+	</update>
+		
+	<update id="confirmProceedings" parameterType="int">
+		update proceeding 
+		   set stt_code = 2,
+		       appr_dt = sysdate
+		 where prcd_no = #{prcdNo}
+	</update>
+		
+	<update id="insertPrcdUser" parameterType="prcdUser">
+		insert into prcd_user(user_id,prcd_no,stt_code)
+		values(#{userId},#{prcdNo},#{sttCode})
+	</update>
+	
+	<select id="selectPdfFile" parameterType="int" resultMap="proceedingsMap">
+		select pdf_content
+		  from proceeding
+		 where prcd_no = #{prcdNo} 
+	</select>
+	
+	<select id="selectExcelFile" parameterType="int" resultMap="proceedingsMap">
+		select excel_content
+		  from proceeding
+		 where prcd_no = #{prcdNo} 
+	</select>
+	
+	<update id="updatePrcdUser" parameterType="prcdUser">
+		update prcd_user
+		   set stt_code = #{sttCode}
+		 where user_id = #{userId}
+		   and prcd_no = #{prcdNo}
+	</update>
+	
+	<update id="updateProceedings" parameterType="proceedings">
+		update proceeding
+		   set title = #{title}
+		   <if test="returnMsg != ''">
+			   ,return_msg = #{returnMsg}
+		   </if>
+		 where prcd_no = #{prcdNo}
+	</update>
+	
+</mapper>  
+
+

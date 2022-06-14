@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Cloud-Mapper">
+
+	<resultMap type="cloudDirectory" id="cloudDirectoryMap">
+		<result column="DIR_NO" property="dirNo"/>
+		<result column="DIR_NM" property="dirNm"/>                     
+		<result column="DIR_PATH" property="dirPath"/>                     
+		<result column="CLD_KEY_CODE" property="cldKeyCode"/>                     
+		<result column="UP_DIR" property="upDir"/>    
+		<result column="PRJ_NO" property="prjNo"/>
+		<result column="USER_ID" property="userId"/>
+		<result column="REG_DT" property="regDt"/>
+		<result column="REGISTER" property="register"/>
+		<result column="UPD_DT" property="updDt"/>
+		<result column="UPDATER" property="updater"/>
+	</resultMap>
+	<resultMap type="cloud" id="cloudMap">
+		<result column="CLD_FILE_NO" property="cldFileNo"/>
+		<result column="PATH" property="path"/>
+		<result column="FILE_NM" property="fileNm"/>
+		<result column="STORED_NM" property="storedNm"/>
+		<result column="EXT" property="ext"/>
+		<result column="URL" property="url"/>
+		<result column="FILESIZE" property="filesize"/>
+		<result column="DOWN_CNT" property="downCnt"/>
+		<result column="REG_DT" property="regDt"/>
+		<result column="REGISTER" property="register"/>
+		<result column="UPD_DT" property="updDt"/>
+		<result column="UPDATER" property="updater"/>
+		<result column="DIR_NO" property="dirNo"/>
+	</resultMap>
+
+<!-- 	<sql id="sort"> -->
+<!-- 		<if test="category == 'desc'.toString()"> -->
+<!-- 			order by reg_dt desc -->
+<!-- 		</if> -->
+<!-- 		<if test="category == 'h'.toString()"> -->
+<!-- 			order by -->
+<!-- 		</if> -->
+<!-- 		<if test="category == 'nh'.toString()"> -->
+<!-- 			order by -->
+<!-- 		</if> -->
+<!-- 	</sql> -->
+	
+	<sql id="type">
+		<if test="cldKeyCode == '1'.toString()">
+			and prj_no = #{prjNo}
+		</if>
+		<if test="cldKeyCode == '2'.toString()">
+			and user_id = #{userId}
+		</if>
+	</sql>
+	<sql id="dir_sort">
+		<if test="mainCategory == 'updateDt'.toString() and subCategory == 'asc'.toString">
+			order by upd_dt asc
+		</if>
+		<if test="mainCategory == 'updateDt'.toString() and subCategory == 'desc'.toString">
+			order by upd_dt desc
+		</if>
+		<if test="mainCategory == 'registDt'.toString() and subCategory == 'asc'.toString">
+			order by reg_dt asc
+		</if>
+		<if test="mainCategory == 'registDt'.toString() and subCategory == 'desc'.toString">
+			order by reg_dt desc
+		</if>
+		<if test="mainCategory == 'name'.toString() and subCategory == 'asc'.toString">
+			order by dir_nm asc
+		</if>
+		<if test="mainCategory == 'name'.toString() and subCategory == 'desc'.toString">
+			order by dir_nm desc
+		</if>
+	</sql>
+	<sql id="cloud_sort">
+		<if test="mainCategory == 'updateDt'.toString() and subCategory == 'asc'.toString">
+			order by upd_dt asc
+		</if>
+		<if test="mainCategory == 'updateDt'.toString() and subCategory == 'desc'.toString">
+			order by upd_dt desc
+		</if>
+		<if test="mainCategory == 'registDt'.toString() and subCategory == 'asc'.toString">
+			order by reg_dt asc
+		</if>
+		<if test="mainCategory == 'registDt'.toString() and subCategory == 'desc'.toString">
+			order by reg_dt desc
+		</if>
+		<if test="mainCategory == 'name'.toString() and subCategory == 'asc'.toString">
+			order by file_nm asc
+		</if>
+		<if test="mainCategory == 'name'.toString() and subCategory == 'desc'.toString">
+			order by file_nm desc
+		</if>
+		<if test="mainCategory == 'filesize'.toString() and subCategory == 'asc'.toString">
+			order by filesize asc
+		</if>
+		<if test="mainCategory == 'filesize'.toString() and subCategory == 'desc'.toString">
+			order by filesize desc
+		</if>     
+	</sql>
+	
+	<select id="selectMainCloudDirectoryList" resultMap="cloudDirectoryMap">
+		select *
+		from cld_dir
+		where up_dir = #{dirNo}
+		<include refid="type" />
+		<include refid="dir_sort"/>
+	</select>
+	
+	<select id="selectMainCloudList" resultMap="cloudMap">
+		select *
+		from cloud
+		where dir_no = #{dirNo}
+		<include refid="cloud_sort"/>
+	</select>
+	
+	<select id="selectSubCloudDirectoryList" resultMap="cloudDirectoryMap">
+		select *
+		from cld_dir
+		where up_dir = #{dirNo}
+		<include refid="type" />
+		<include refid="dir_sort"/>
+	</select>
+	
+	<select id="selectSubCloudList" resultMap="cloudMap">
+		select *
+		from cloud
+		where dir_no = #{dirNo}
+		<include refid="type" />
+		<include refid="cloud_sort"/>
+	</select>
+	
+	<select id="selectCloudDirectoryNoByUserId" resultMap="cloudDirectoryMap">
+		select *
+		from cld_dir
+		where user_id = #{userId}
+		  and up_dir is null
+	</select>
+	
+	<select id="selectHomeDirNoByPrjNo" resultType="int">
+		select dir_no
+		  from cld_dir
+		 where prj_no = #{prjNo}
+		   and up_dir is null 
+	</select>
+	
+	<!-- 클라우드 insert -->
+	<update id="insertCloudDirectory" parameterType="cloudDirectory">
+		insert into
+		<if test="cldKeyCode == '2'.toString()">
+			cld_dir (dir_no, dir_nm, dir_path, cld_key_code, up_dir, user_id, reg_dt, register, upd_dt, updater)
+			values (#{dirNo}, #{dirNm}, #{dirPath}, #{cldKeyCode}, #{upDir}, #{userId}, sysdate, #{userId}, sysdate, #{userId})
+		</if>
+		<if test="cldKeyCode == '1'.toString()">
+			cld_dir (dir_no, dir_nm, dir_path, cld_key_code, up_dir, prj_no, reg_dt, register, upd_dt, updater)
+			values (#{dirNo}, #{dirNm}, #{dirPath}, #{cldKeyCode}, #{upDir}, #{prjNo}, sysdate, #{userId}, sysdate, #{userId})
+		</if>
+	</update>
+	
+	<update id="insertCloudFile" parameterType="cloud">
+		insert into
+		cloud (cld_file_no, path, file_nm, stored_nm, ext, filesize, down_cnt, reg_dt, register, upd_dt, updater, dir_no)
+		values (#{cldFileNo}, #{path}, #{fileNm}, #{storedNm}, #{ext}, #{filesize}, #{downCnt}, sysdate, #{register}, sysdate, #{updater}, #{dirNo})
+	</update>
+	
+	<update id="insertUserCloudDirectory">
+		insert into
+		cld_dir (dir_no, dir_nm, dir_path, cld_key_code,
+ 		<if test="upDir != 0">
+		 up_dir, 
+		</if>
+		 user_id, reg_dt, register, upd_dt, updater)
+		values (#{dirNo}, #{dirNm}, #{dirPath}, #{cldKeyCode},
+ 		<if test="upDir != 0">
+		 #{upDir}, 
+		 </if>
+		 #{userId}, sysdate, #{userId}, sysdate, #{userId})
+	</update>
+	
+	<update id="insertProjectCloudDirectory">
+		insert into
+		cld_dir (dir_no, dir_nm, cld_key_code, dir_path ,
+		<if test="upDir != 0">
+		 up_dir, 
+		</if>
+		 prj_no, reg_dt, register, upd_dt, updater)
+		values (#{dirNo}, #{dirNm}, #{cldKeyCode}, #{dirPath},
+		<if test="upDir != 0">
+		 up_dir, 
+		</if> 
+		#{prjNo}, sysdate, #{userId}, sysdate, #{userId})
+	</update>
+	
+	<select id="selectCloudDirectorySeqNext" resultType="int">
+		select cld_dir_no_seq.nextval as dir_no from dual
+	</select>
+	
+	<select id="selectCloudFileSeqNext" resultType="int">
+		select cld_file_no_seq.nextval as dir_no from dual
+	</select>
+	
+	<select id="selectCloudDirectoryByDirNo" parameterType="int" resultMap="cloudDirectoryMap">
+		select *
+		from cld_dir
+		where dir_no = #{dirNo}
+	</select>
+	
+	<select id="selectCloudDirecotryByPath" resultMap="cloudDirectoryMap">
+		select *
+		from cld_dir
+		where dir_path = #{dirPath}
+	</select>
+	
+	<select id="selectSubCloudDirectoryByPath" resultMap="cloudDirectoryMap">
+		select dir_no,
+		       dir_path,
+		       dir_nm
+		from cld_dir
+		where dir_path like '%'||#{dirPath}||'%'       
+	</select>
+	
+	<select id="selectCloudListByPath" resultMap="cloudMap">
+		select cld_file_no,
+		       down_cnt,
+		       stored_nm,
+		       path
+		from cloud
+		where path like '%'||#{path}||'%'       
+	</select>
+	
+	<select id="selectCloudByCldFileNo" resultMap="cloudMap">
+		select *
+		  from cloud
+		 where cld_file_no = #{cldFileNo} 
+	</select>
+	
+	<update id="updateCloudDownCnt">
+		update cloud
+		   set down_cnt = #{downCnt}
+		 where cld_file_no = #{cldFileNo}   
+	</update>
+	
+	<update id="updateCloudFileName">
+		update cloud
+		   set path = #{path},
+		       file_nm = #{fileNm},
+		       stored_nm = #{storedNm},
+		       upd_dt = sysdate,
+		       updater = #{updater}
+		 where cld_file_no = #{cldFileNo}  
+	</update>
+	
+	<update id="updateCloudDirectoryName">
+		update cld_dir
+		   set dir_nm = #{dirNm},
+		       dir_path = #{dirPath},
+		       upd_dt = sysdate,
+		       updater = #{updater}
+		 where dir_no = #{dirNo}  
+	</update>
+	
+	<update id="updateCloudDirectoryPath">
+		update cld_dir
+		   set dir_path = #{dirPath},
+		       dir_nm = #{dirNm}
+		 where dir_no = #{dirNo}  
+	</update>
+	
+	<update id="updateCloudPath">
+		update cloud
+		   set path = #{path}
+		 where cld_file_no = #{cldFileNo}  
+	</update>
+	
+	<!-- 클라우드 폴더 삭제 기능 -->
+	<update id="deleteCloudDirectory">
+		delete
+		  from cld_dir
+		 where dir_no = #{dirNo} 
+	</update>
+	
+	<update id="deleteCloud">
+		delete
+		  from cloud
+		 where cld_file_no = #{cldFileNo} 
+	</update>
+	
+</mapper>

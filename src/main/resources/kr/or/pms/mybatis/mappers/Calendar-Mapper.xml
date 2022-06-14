@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Calendar-Mapper">
+
+	<resultMap id="prjUserMap" type="prjUser">
+		<result column="PRJ_NO" property="prjNo" />
+		<result column="USER_ID" property="userId" />
+		<result column="JOIN_GRADE_ID" property="joinGradeId" />
+		<result column="BGN_DT" property="bgnDt" />
+		<result column="END_DT" property="endDt" />
+		<result column="STT_CODE" property="sttCode" />
+	</resultMap>
+	<resultMap id="scheduleMap" type="schedule">
+		<result column="SCHED_NO" property="schedNo" />
+		<result column="TITLE" property="title" />
+		<result column="CONTENT" property="content" />
+		<result column="REGISTER" property="register" />
+		<result column="REG_DT" property="regDt" />
+		<result column="BGN_DT" property="bgnDt" />
+		<result column="END_DT" property="endDt" />
+		<result column="IPCR_CODE" property="ipcrCode" />
+		<result column="ALLDAY_NY_CODE" property="alldayNyCode" />
+		<result column="URL" property="url" />
+		<result column="KEY_CODE" property="keyCode" />
+		<result column="PRJ_NO" property="prjNo" />
+	</resultMap>
+	<resultMap type="project" id="projectMap">
+		<result column="prj_no" property="prjNo"/>
+		<result column="prj_nm" property="prjNm"/>
+		<result column="prj_comment" property="prjComment"/>
+		<result column="enabled" property="enabled"/>
+		<result column="stt_code" property="sttCode"/>
+		<result column="reg_dt" property="regDt"/>
+		<result column="bgn_dt" property="bgnDt"/>
+		<result column="end_dt" property="endDt"/>
+		<result column="favorites" property="favorites"/>
+		<result column="team_no" property="teamNo"/>
+		<result column="team_nm" property="teamNm"/>
+	</resultMap>
+	
+	<select id="selectRangeDt" resultMap="scheduleMap">
+		SELECT *
+		  FROM schedule
+		 WHERE ipcr_code != '2' 
+	</select>
+	
+	<select id="selectPrjUserByUserId" resultMap="prjUserMap">
+		select *
+		  from prj_user
+		 where user_id = #{userId} 
+	</select>
+		
+	<select id="selectPrjUserByPrjNo" resultType="str">
+		select user_id
+		  from prj_user
+		 where prj_no = #{prjNo} 
+	</select>
+		
+	<select id="selectCompany" resultMap="scheduleMap">
+		select *
+		  from schedule
+		 where key_code = '1'
+	</select>
+	
+	<select id="selectCompanyByDt" resultMap="scheduleMap">
+		select *
+		  from schedule
+		 where key_code = '1'
+		   and to_date(#{selectDt}) between bgn_dt and end_dt
+	</select>
+	
+	<select id="selectPersonal" resultMap="scheduleMap">
+		select *
+		  from schedule
+		 where register = #{register}
+		   and key_code = '2'
+	</select>
+	
+	<select id="selectPersonalByDt" resultMap="scheduleMap">
+		select *
+		  from schedule
+		 where register = #{register}
+		   and key_code = '2'
+		   and to_date(#{selectDt}) between bgn_dt and end_dt
+	</select>
+	
+	<select id="selectOrderPersonal" resultMap="scheduleMap">
+		select *
+		  from schedule
+		 where key_code = '2'
+		   and ipcr_code = '2'
+		   and register != #{register}
+		   and prj_no = #{prjNo}
+	</select>
+	
+	<select id="selectOrderPersonalByDt" resultMap="scheduleMap">
+		select *
+		  from schedule
+		 where key_code = '2'
+		   and ipcr_code = '2'
+		   and register != #{register}
+		   and prj_no = #{prjNo}
+		   and to_date(#{selectDt}) between bgn_dt and end_dt
+	</select>
+	
+	<select id="selectProject" resultMap="scheduleMap">
+		select *
+		  from schedule
+		 where key_code = '3'
+		   and prj_no = #{prjNo}
+	</select>
+	
+	<select id="selectProjectByDt" resultMap="scheduleMap">
+		select *
+		  from schedule
+		 where key_code = '3'
+		   and prj_no = #{prjNo}
+		   and to_date(#{selectDt}) between bgn_dt and end_dt
+	</select>
+	
+	<select id="selectScheduleBySchedNo" resultMap="scheduleMap">
+		select *
+		  from schedule
+		 where sched_no = #{schedNo}
+	</select>
+	
+	<select id="selectPrjNmByPrjNo" resultMap="projectMap">
+		select *
+		  from project
+		 where prj_no = #{prjNo} 
+	     order by prj_no desc
+	</select>
+	
+	<select id="getSchedNo" resultType="int">
+		select sched_no_seq.nextval
+		  from dual
+	</select>
+	
+	<update id="insertSchedule" parameterType="schedule">
+		insert into schedule(sched_no,title,content,register,reg_dt,bgn_dt,end_dt,ipcr_code,key_code)
+		values(#{schedNo},#{title},#{content},#{register},sysdate,#{bgnDt},#{endDt},#{ipcrCode},#{keyCode})
+	
+	</update>
+	
+	<update id="insertProjectSchedule" parameterType="schedule">
+		insert into schedule(sched_no,title,content,register,reg_dt,bgn_dt,end_dt,ipcr_code,prj_no,key_code)
+		values(sched_no_seq.nextval,#{title},#{content},#{register},sysdate,#{bgnDt},#{endDt},#{ipcrCode},#{prjNo},#{keyCode})
+	
+	</update>
+	
+	<update id="modifySchedule" parameterType="schedule">
+		update schedule
+		   set title=#{title},
+		       content=#{content},
+		       bgn_dt=#{bgnDt},
+		       end_dt=#{endDt},
+		       ipcr_code=#{ipcrCode},
+		       key_code=#{keyCode}
+		 where sched_no=#{schedNo}
+	</update>	
+	
+	<update id="modifyProjectSchedule" parameterType="schedule">
+		update schedule
+		   set title=#{title},
+		       content=#{content},
+		       bgn_dt=#{bgnDt},
+		       end_dt=#{endDt},
+		       prj_no=#{prjNo},
+		       ipcr_code=#{ipcrCode},
+		       key_code=#{keyCode}
+		 where sched_no=#{schedNo}
+	</update>	
+	
+	<update id="deleteSchedule" parameterType="int">
+		delete from schedule
+		 where sched_no=#{schedNo}
+	</update>
+	
+</mapper>  
+
+

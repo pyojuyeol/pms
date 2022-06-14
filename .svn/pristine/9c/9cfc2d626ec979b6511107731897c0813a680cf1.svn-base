@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Db-Mapper">
+
+	<resultMap id="dbMap" type="db">
+		<result column="DB_NO" property="dbNo" />
+		<result column="DB_NM" property="dbNm" />
+		<result column="DBCN_NO" property="dbcnNo" />
+	</resultMap>
+	<resultMap id="dbcnMap" type="dbcn">
+		<result column="DBCN_NO" property="dbcnNo" />
+		<result column="PATH" property="path" />
+		<result column="FILE_NM" property="fileNm" />
+		<result column="DBCN_URL" property="dbcnUrl" />
+		<result column="DBCN_USER" property="dbcnUser" />
+		<result column="DBCN_PWD" property="dbcnPwd" />
+		<result column="DB_TYPE" property="dbType" />
+		<result column="PATH" property="path" />
+		<result column="FILE_NM" property="fileNm" />
+		<result column="MAX_IDLE" property="maxIdle" />
+		<result column="MAX_TOTAL" property="maxTotal" />
+		<result column="STT_CODE" property="sttCode" />
+		<result column="DBCN_NM" property="dbcnNm" />
+		<result column="REG_DT" property="regDt" />
+		<result column="UPD_DT" property="updDt" />
+
+		<result column="DB_NO" property="dbNo" />
+		<result column="DB_NM" property="dbNm" />
+	</resultMap>
+	
+	<select id="selectDbList" resultMap="dbMap">
+  		select * 
+  		  from db
+	     order by db_no
+	</select>
+	<select id="selectDbByNm" parameterType="str" resultMap="dbMap">
+  		select *
+  		  from db 
+  		 where db_nm = #{dbNm}
+	</select>
+	
+	<select id="selectDbcnBydbNo" parameterType="int" resultMap="dbcnMap">
+  		select cn.*
+  		  from db d left join dbcn cn
+            on d.dbcn_no = cn.dbcn_no
+  		 where db_no = #{dbNo}
+	</select>
+	
+	<select id="selectDbcnBydbNm" parameterType="str" resultMap="dbcnMap">
+  		select cn.*
+  		  from db d left join dbcn cn
+            on d.dbcn_no = cn.dbcn_no
+  		 where db_nm = #{dbNm}
+	</select>
+	
+	<select id="selectDbByDbcnNo" parameterType="int" resultMap="dbMap">
+  		select * 
+  		  from db
+  		  where dbcn_no = #{dbcnNo}
+	</select>
+
+	<update id="update" parameterType="db">
+		update db
+		set dbcn_no = #{dbcnNo}
+		where db_nm = #{dbNm}
+	</update>
+	
+</mapper>  
+
+

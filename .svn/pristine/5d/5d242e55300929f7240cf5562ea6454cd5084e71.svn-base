@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Log-Mapper">
+	<sql id="search">
+		<if test="searchType == 'f'.toString()">
+			and file_nm like '%'||#{keyword}||'%'
+		</if>
+		<if test="searchType == 't'.toString()">
+			and db_type like '%'||#{keyword}||'%'			
+		</if>
+		<if test="searchType == 'n'.toString()">
+			and nm like '%'||#{keyword}||'%'			
+		</if>
+		<if test="searchType == 'r'.toString()">
+			and result_code = #{keyword}
+		</if>
+		<if test="searchType == 'u'.toString()">
+			and user_id like '%'||#{keyword}||'%'						
+		</if>
+		<if test="searchType == 'i'.toString()">
+			and ip  like '%'||#{keyword}||'%'
+		</if>
+	</sql>
+	<sql id="rangeDt">
+		and 
+	</sql>
+	<resultMap type="sysSchedLog" id="sysSchedLogMap">
+		<result column="SYS_SCHED_NO" property="sysSchedNo"/>
+		<result column="NM" property="nm"/>                     
+		<result column="INFO" property="info"/>                     
+		<result column="BGN_DT" property="bgnDt"/>                     
+		<result column="END_DT" property="endDt"/>
+		<result column="TAKED_TIME" property="takedTime"/>
+		<result column="RESULT_CODE" property="resultCode"/>
+	</resultMap>
+	<resultMap type="fileLog" id="fileLogMap">
+		<result column="FILE_DOWN_LOG_NO" property="fileDownLogNo"/>
+		<result column="USER_ID" property="userId"/>                     
+		<result column="FILE_KEY" property="fileKey"/>                     
+		<result column="FILE_NO" property="fileNo"/>                     
+		<result column="FILE_NM" property="fileNm"/>
+		<result column="DWLD_TIME" property="dwldTime"/>
+		<result column="IP" property="ip"/>
+	</resultMap>
+	<resultMap type="connectLog" id="connectLogMap">
+		<result column="CN_LOG_NO" property="cnLogNo"/>
+		<result column="USER_ID" property="userId"/>                     
+		<result column="CN_KEY_CODE" property="cnKeyCode"/>                     
+		<result column="LOGIN_DT" property="loginDt"/>                     
+		<result column="LOGOUT_DT" property="logoutDt"/>
+		<result column="CN_TIME" property="cnTime"/>
+		<result column="IP" property="ip"/>
+		<result column="LOCATION" property="location"/>
+	</resultMap>
+	<resultMap type="dbcnLog" id="dbcnLogMap">
+		<result column="CNG_LOG_NO" property="cngLogNo"/>
+		<result column="DBCN_NO" property="dbcnNo"/>                     
+		<result column="PATH" property="path"/>                     
+		<result column="FILE_NM" property="fileNm"/>
+		<result column="DB_NM" property="dbNm"/>
+		<result column="DBCN_URL" property="dbcnUrl"/>
+		<result column="DBCN_USER" property="dbcnUser"/>
+		<result column="DBCN_PWD" property="dbcnPwd"/>
+		<result column="CNG_DT" property="cngDt"/>
+	</resultMap>
+
+	<!-- 파일 다운로드 로그 insert -->
+	<update id="insertFileDownloadLog">
+		insert into file_log
+		(file_down_log_no, user_id, file_key, file_no, file_nm, dwld_time, ip)
+		values(#{fileDownLogNo}, #{userId}, #{fileKey}, #{fileNo}, #{fileNm}, #{dwldTime}, #{ip})
+	</update>
+	
+	<!-- 파일 다운로드 로그 insert 시 시퀀스 값 받아오기 -->
+	<select id="selectFileLogSeqNext" resultType="int">
+		select file_log_seq.nextval as file_down_log_no from dual
+	</select>	
+	<!-- 파일 다운로드 로그 select -->
+	
+	<!-- 로그인 로그 입력 -->
+	<update id="insertLoginLog">
+		insert into connect_log
+		(cn_log_no, user_id, cn_key_code, login_dt, ip)
+		values(#{cnLogNo}, #{userId}, #{cnKeyCode}, #{loginDt}, #{ip})
+	</update>
+	
+	
+	<!-- 로그인 로그 insert 시 시퀀스 값 받아오기 -->
+	<select id="selectConnectLogSeqNext" resultType="int">
+		select connect_log_seq.nextval as cn_log_no from dual
+	</select>
+	
+	<!-- 로그아웃 시 로그 수정 반영 -->
+	<update id="updateLogoutLog">
+		update connect_log
+		   set logout_dt = #{logoutDt},
+		       cn_time = #{cnTime},
+		       cn_key_code = #{cnKeyCode}
+		 where cn_log_no = #{cnLogNo}      
+	</update>
+	
+	<select id="selectLoginLogByUserId" resultMap="connectLogMap">
+		select cn_log_no,
+		       login_dt
+		  from connect_log
+		 where logout_dt is null
+		   and user_id = #{loginUserId}
+	</select>
+	
+	<!-- 관리자 이력관리 리스트 출력 -->
+	<select id="selectSystemSchedulerLog" resultMap="sysSchedLogMap">
+		select *
+		  from (
+		  		select rownum as rnum, SearchSysSchedLog.*
+		  		  from (
+		  		  		select *
+		  		  		  from sys_schd_log
+		  		  		  where sys_sched_no is not null
+		  		  		  <include refid="search" />
+		  		  		  <if test="startDt != null and endDt != null">
+		  		  		  and bgn_dt between to_date(#{startDt}) and to_date(#{endDt}) + 0.99999
+		  		  		  </if>
+		  		  		  order by end_dt desc
+		  		  ) SearchSysSchedLog
+		  		  <![CDATA[
+		  		  where rownum <= #{endRow}
+		  		  ]]>
+		  )
+		  <![CDATA[
+		  where rnum > #{startRow}
+		  ]]>
+	</select>
+	<select id="selectFileLog" resultMap="fileLogMap">
+		select *
+		  from (
+		  		select rownum as rnum, SearchFileLog.*
+		  		  from (
+		  		  		select *
+		  		  		  from file_log
+		  		  		 where file_down_log_no is not null
+		  		  		 <include refid="search" />
+		  		  		 <if test="startDt != null and endDt != null">
+		  		  		 and dwld_time between to_date(#{startDt}) and to_date(#{endDt}) + 0.99999
+		  		  		 </if>
+		  		  		 order by dwld_time desc
+		  		  ) SearchFileLog
+		  		  <![CDATA[
+		  		  where rownum <= #{endRow}
+		  		  ]]>
+		  )
+		  <![CDATA[
+		  where rnum > #{startRow}
+		  ]]>
+	</select>
+	<select id="selectConnectLog" resultMap="connectLogMap">
+		select *
+		  from (
+		  		select rownum as rnum, SearchConnectLog.*
+		  		  from (
+		  		  		select *
+		  		  		  from connect_log
+		  		  		 where cn_log_no is not null
+		  		  		 <if test="startDt != null and endDt != null">
+		  		  		 and login_dt between to_date(#{startDt}) and to_date(#{endDt}) + 0.99999 
+		  		  		 </if>
+		  		  		 <include refid="search" />
+		  		  		 order by logout_dt desc
+		  		  ) SearchConnectLog
+		  		  <![CDATA[
+		  		  where rownum <= #{endRow}
+		  		  ]]>
+		  )
+		  <![CDATA[
+		  where rnum > #{startRow}
+		  ]]>
+	</select>
+	<select id="selectDbcnLog" resultMap="dbcnLogMap">
+		select *
+		  from (
+		  		select rownum as rnum, SearchDbcnLog.*
+		  		  from (
+		  		  		select *
+		  		  		  from dbcn_log
+		  		  		 where cng_log_no is not null
+		  		  		 <include refid="search" />
+		  		  		 <if test="startDt != null and endDt != null">
+		  		  		 and cng_dt between to_date(#{startDt}) and to_date(#{endDt}) + 0.99999
+                         </if>
+		  		  		 order by cng_dt desc
+		  		  ) SearchDbcnLog
+		  		  <![CDATA[
+		  		  where rownum <= #{endRow}
+		  		  ]]>
+		  )
+		  <![CDATA[
+		  where rnum > #{startRow}
+		  ]]>
+	</select>
+	
+	<!-- totalCount 가져오기 -->
+	<select id="selectTotalConnectLog" resultType="int">
+		select count(*)
+		  from connect_log
+		 where cn_log_no is not null
+		  		  		 <if test="startDt != null and endDt != null">
+		  		  		 and login_dt between to_date(#{startDt}) and to_date(#{endDt}) + 0.99999 
+		  		  		 </if>
+		  		  		 <include refid="search" /> 
+	</select>
+	<select id="selectTotalFileLog" resultType="int">
+		select count(*)
+		  from file_log
+		 where file_down_log_no is not null
+		  		  		 <include refid="search" />
+		  		  		 <if test="startDt != null and endDt != null">
+		  		  		 and dwld_time between to_date(#{startDt}) and to_date(#{endDt}) + 0.99999
+		  		  		 </if> 
+	</select>
+	<select id="selectTotalSystemSchedulerLog" resultType="int">
+		select count(*)
+		  from dbcn_log
+		 where cng_log_no is not null
+		  		  		 <include refid="search" />
+		  		  		 <if test="startDt != null and endDt != null">
+		  		  		 and cng_dt between to_date(#{startDt}) and to_date(#{endDt}) + 0.99999
+                         </if> 
+	</select>
+	<select id="selectTotalDbcnLog" resultType="int">
+		select count(*)
+		  from sys_schd_log
+		 where sys_sched_no is not null
+		  		  		  <include refid="search" />
+		  		  		  <if test="startDt != null and endDt != null">
+		  		  		  and bgn_dt between to_date(#{startDt}) and to_date(#{endDt}) + 0.99999
+		  		  		  </if> 
+	</select>
+	<!-- DBCN 로그 입력 -->
+	<update id="insertDbcnLog">
+		insert into dbcn_log
+		( cng_log_no
+		, dbcn_no
+		, path
+		, file_nm
+		, db_nm
+		, dbcn_url
+		, dbcn_user
+		, dbcn_pwd
+		, cng_dt
+		)
+		values
+		( cng_log_no_seq.nextval
+		, #{dbcnNo}
+		, #{path}
+		, #{fileNm}
+		, #{dbNm}
+		, #{dbcnUrl}
+		, #{dbcnUser}
+		, #{dbcnPwd}
+		, #{cngDt}
+		)
+	</update>
+</mapper>

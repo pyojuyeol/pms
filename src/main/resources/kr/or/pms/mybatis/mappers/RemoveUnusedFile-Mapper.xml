@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="RemoveUnusedFile-Mapper">
+
+	<resultMap id="attachMap" type="attach">
+		<result column="ATTACH_PATH" property="attachPath" />
+		<result column="STRORED_NM" property="stroredNm" />
+	</resultMap>
+
+	<!-- 첨부파일 경로 가져오기 -->
+	<select id="selectAllAttachPath" resultMap="attachMap">
+		select attach_path,
+		       strored_nm
+		  from attach
+	</select>
+	
+	<!-- 클라우드파일 경로 가져오기 -->
+	<select id="selectAllCloudPath" resultType="str">
+		select path
+		  from cloud
+	</select>
+	
+	<!-- 모든 유저사진 파일 경로 가져오기 -->
+	<select id="selectAllUserPicturePath" resultType="str">
+		select pic_saved_nm
+		  from users
+	</select>
+</mapper>

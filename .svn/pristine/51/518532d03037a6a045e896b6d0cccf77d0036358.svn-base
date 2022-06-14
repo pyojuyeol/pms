@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="DbRsrv-Mapper">
+
+	<resultMap id="dbRsrvMap" type="dbRsrv">
+		<result column="DB_NO" property="dbNo" />
+		<result column="DB_NM" property="dbNm" />
+		<result column="DB_TYPE" property="dbType" />
+		<result column="DBCN_NO" property="dbcnNo" />
+		<result column="DBCN_USER" property="dbcnUser" />
+		<result column="DBCN_URL" property="dbcnUrl" />
+		<result column="DB_RSRV_NO" property="dbRsrvNo" />
+		<result column="REG_DT" property="regDt" />
+		<result column="UPD_DT" property="updDt" />
+		<result column="MODIFIER" property="modifier" />
+		<result column="WRITER" property="writer" />
+		<result column="STT" property="stt" />
+		<result column="FAILURE_REASON" property="failureReason" />
+	</resultMap>
+	
+	<sql id="search">
+		<if test="searchType == 'u'.toString()">
+			and DBCN_URL like '%'||#{keyword}||'%'
+		</if>
+		<if test="searchType == 'i'.toString()">
+			and DBCN_USER like '%'||#{keyword}||'%'
+		</if>
+		<if test='searchDbNm != ""'>
+			and DB_NM = #{searchDbNm}
+		</if>
+	</sql>
+	
+	<select id="selectDbRsrvList" resultMap="dbRsrvMap">
+  		select dr.*, d.db_nm, cn.dbcn_user, cn.dbcn_url,cn.db_type
+		  from db_rsrv dr 
+		  left join db d
+		    on dr.db_no = d.db_no
+		  left join dbcn cn
+	 	    on dr.dbcn_no = cn.dbcn_no
+	     <where>
+	     	<include refid="search"/>
+	     </where>
+	     
+	     order by dr.reg_dt desc
+	     
+	</select>
+	
+	<select id="selectTotalCountDbRsrv" resultType="int">
+		select count(*) 
+  		  from (select dr.*, d.db_nm, cn.dbcn_user, cn.dbcn_url,cn.db_type
+				  from db_rsrv dr 
+				  left join db d
+				    on dr.db_no = d.db_no
+				  left join dbcn cn
+			 	    on dr.dbcn_no = cn.dbcn_no
+			     <where>
+			     	<include refid="search"/>
+			     </where>
+	     )
+	     
+	</select>
+	
+	<select id="selectTodayRsrvList" resultMap="dbRsrvMap">
+  		select dr.*, d.db_nm, cn.dbcn_user, cn.dbcn_url, cn.db_type
+		  from (select * 
+		  		  from db_rsrv 
+		  		 where to_char(reg_dt-1,'yyyy-mm-dd') = to_char(sysdate-1,'yyyy-mm-dd') 
+		  		   and stt = 0
+		  		 order by db_no) dr 
+		  left join db d
+		    on dr.db_no = d.db_no
+		  left join dbcn cn
+	 	    on dr.dbcn_no = cn.dbcn_no
+	     order by d.db_no DESC
+	</select>
+	
+	<select id="selectDbRsrvByNo" resultMap="dbRsrvMap">
+		select * 
+  		  from db_rsrv
+  		 where db_rsrv_no = #{dbRsrvNo}
+	</select>
+	
+	<select id="selectDbRsrvByDbNo" resultMap="dbRsrvMap">
+		select * 
+  		  from db_rsrv
+  		 where stt = 0
+  		   and db_no = #{dbNo}
+	</select>
+	
+	<update id="insert" parameterType="dbRsrv">
+		insert into db_rsrv
+		(
+			  db_rsrv_no
+			, db_no
+			, dbcn_no
+			, reg_dt
+			, modifier
+			, writer
+			, stt
+		)
+		values
+		(
+			  db_rsrv_no_seq.nextval
+			, #{dbNo}
+			, #{dbcnNo}
+			, sysdate
+			, #{writer}
+			, #{writer}
+			, 0
+		)
+	</update>
+	
+	<update id="updateStt" parameterType="map">
+		update db_rsrv
+		set stt = #{stt},
+			upd_dt = sysdate
+		where db_rsrv_no = #{dbRsrvNo}
+	</update>
+	
+	<update id="delete" parameterType="map">
+		update db_rsrv
+		set stt = 10,
+			modifier = #{modifier},
+			upd_dt = sysdate
+		where db_rsrv_no = #{dbRsrvNo}
+	</update>
+</mapper>  
+
+

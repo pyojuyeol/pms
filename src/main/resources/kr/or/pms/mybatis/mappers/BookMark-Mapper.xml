@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="BookMark-Mapper">
+
+	<resultMap type="bookMark" id="bmkMap">
+		<result column="BOOKMARK_NO" property="bookmarkNo"/>
+		<result column="BMK_TITLE" property="bmkTitle"/>
+		<result column="PRJ_NO" property="prjNo"/>
+		<result column="CREATOR" property="creator"/>
+		<result column="STT_CODE" property="sttCode"/>
+		<result column="BMK_CONTENT" property="bmkContent"/>
+		<result column="ISSUE_NO" property="issueNo"/>
+		<result column="REG_DT" property="regDt"/>
+		<result column="END_DT" property="endDt"/>
+	</resultMap>
+	
+	<resultMap type="issue" id="BMKIssueMap">
+		<result property="issueNo" column="ISSUE_NO"/>
+		<result property="gradeCode" column="GRADE_CODE"/>
+		<result property="prjNo" column="PRJ_NO"/>
+		<result property="issueRegister" column="ISSUE_REGISTER"/>
+		<result column="REGISTER" property="register"/>
+		<result property="content" column="CONTENT"/>
+		<result property="sttCode" column="STT_CODE"/>
+		<result property="attachNo" column="ATTACH_NO"/>
+		<result property="replyNo" column="REPLY_NO"/>
+		<result property="title" column="TITLE"/>
+		<result property="bookmarkNo" column="BOOKMARK_NO"/>
+		<result property="regDt" column="REG_DT"/>
+		<result property="prjNm" column="Prj_Nm"/>
+		<result property="userId" column="user_id"/>
+		<result property="userNm" column="user_nm"/>
+	</resultMap>
+
+	<sql id="search">
+		<if test="searchType == 'tcw'.toString()">
+			 and CREATOR like '%'||#{keyword}||'%'
+			 and BMK_CONTENT like '%'||#{keyword}||'%'
+			 and BMK_TITLE like '%'||#{keyword}||'%'
+		</if>
+		<if test="searchType == 't'.toString()">
+			and BMK_TITLE like '%'||#{keyword}||'%'
+		</if>
+		<if test="searchType == 'w'.toString()">
+			and CREATOR like '%'||#{keyword}||'%'
+		</if>
+		<if test="searchType == 'c'.toString()">
+			and BMK_CONTENT like '%'||#{keyword}||'%'
+		</if>
+	</sql>
+
+
+	<!-- 0) 북마크 리스트 -->
+	<select id="selectAllBMKList" resultMap="bmkMap">	
+		select * 
+		from bookmark
+		where 1=1
+		  and stt_code!='del'
+		  and prj_no = #{prjNo}
+		  and stt_code like '%'||#{sttCode}||'%'
+		<include refid="search"/>
+	 order by reg_dt desc  
+	</select>
+	
+	<!-- 0.0) 전체 북마크 갯수 -->
+	<select id="countTotalBMK" resultType="int">
+		select count(*)
+		  from bookmark
+		 where prj_no = #{prjNo}
+		   and stt_code!='del'
+	</select>
+	
+	<!-- 0.1) 전체 이슈 갯수 -->
+	<select id="countTotalIssue" resultType="int">
+		select count(*)
+	  	  from issue
+		 where Bookmark_No = #{bookmarkNo}
+		   and prj_no = #{prjNo}
+	</select>
+	
+	<!-- 0.2) 닫힌 이슈 갯수 -->
+	<select id="countTotalClosedIssue" resultType="int">
+		select count(*)
+	  	  from issue
+		 where Bookmark_No = #{bookmarkNo}
+		   and prj_no = #{prjNo}
+	       and stt_code = 'close'
+	</select>
+	
+	<!-- 0.2) 열린 이슈 갯수 -->
+	<select id="countTotalOpenedIssue" resultType="int">
+		select count(*) as totalOpenedIssueCnt
+	  	  from issue
+		 where Bookmark_No = #{bookmarkNo}
+		   and prj_no = #{prjNo}
+	       and stt_code = 'open'
+	</select>
+	
+	
+	
+	<!-- 1) 북마크 등록 -->
+	<update id="insertBMK" parameterType="bookMark">
+		insert 
+		  into bookmark
+		       (Bookmark_No, Bmk_Title, BMK_CONTENT, creator, stt_code, prj_no,reg_dt)
+		values (BOOKMARK_SEQ.Nextval, #{bmkTitle}, #{bmkContent}, #{creator}, 'open', #{prjNo},sysdate)
+	</update>	
+		
+	<!-- 2) 북마크 수정 -->
+	<update id="updateBMK" parameterType="bookMark">
+		update bookmark
+		   set Bmk_Title = #{bmkTitle},
+		       Bmk_Content = #{bmkContent},
+		       Stt_Code = 'open'
+		 where Bookmark_No = #{bookmarkNo}
+	</update>
+		
+	<!-- 2) 북마크 삭제 -->
+	<update id="deleteBMK" parameterType="int">
+		delete 
+		 from BOOKMARK 
+        where BOOKMARK_NO = #{bookmarkNo}
+	</update>
+	
+	<!--  2.1) 북마크 열기 -->
+	<update id="openBMK" parameterType="int">
+		update bookmark
+		   set stt_code = 'open'
+		 where bookmark_no = #{bookmarkNo}
+	</update>	
+		
+	<!-- 2.1) 북마크 닫기 -->
+	<update id="closeBMK" parameterType="int">
+		update bookmark
+		   set stt_code = 'close'
+		where  bookmark_no = #{bookmarkNo}
+	</update>
+		
+	<!-- 3.1) 북마크에 이슈 추가 -->
+	<!-- 받아와야 할 파라미터 = 북마크 번호, 이슈번호 -->
+	<update id="addIssueIntoBMK" parameterType="bookMark">
+		update issue
+		   set bookmark_no = #{bookmarkNo}
+		 where issue_no = #{issueNo}
+	</update>		 
+		
+	<!-- 3.2 북마크에서 이슈 제외 -->
+	<update id="excludeIssueFromBMK" parameterType="int">
+		update issue
+		   set bookmark_no = 0
+		 where bookmark_no = #{bookmarkNo}
+	</update>
+	
+	<!-- 북마크 디테일 불러오기 -->
+	<select id="selectBMKDetailBmkNo" resultMap="bmkMap" parameterType="int">
+		select * 
+		  from bookmark
+		 where bookmark_no = #{bookmarkNo}
+		   and stt_code != 'del'
+	</select>
+	
+	<!-- 북마크 안에 있는 이슈 리스트 불러오기 -->
+	<select id="selectIssueListByBmkNo" resultMap="BMKIssueMap">
+		select 			 b.*, a.user_nm, C.Bmk_Title
+		from 			 issue b
+		right outer join users a on (a.user_id = B.Issue_Register)
+		left outer join  bookmark c on (B.Bookmark_No = C.Bookmark_No)
+		where			 b.prj_no = #{prjNo}
+		and              b.Bookmark_No = #{bookmarkNo}
+	</select>
+	
+<!-- 	
+	<update id="insertIssueIntoBMK" parameterType="issue">
+		insert 
+		  into issue
+		       (issue_no,GRADE_CODE,PRJ_NO,ISSUE_REGISTER,BOOKMARK_NO,
+		        CONTENT,STT_CODE,REPLY_NO,TITLE,REG_DT)
+		values (#{issueNo},#{gradeCode},#{prjNo},#{issueRegister},#{bookmarkNo},
+				#{content},#{sttCode},reply_no_seq.nextVal,#{title},sysdate)     
+	</update>
+	 -->
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

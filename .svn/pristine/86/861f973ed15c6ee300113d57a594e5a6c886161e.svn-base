@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Tmem-Mapper">
+
+	<resultMap type="tmem" id="tmemMap">
+		<result column="team_no" property="teamNo"/>
+		<result column="user_id" property="userId"/>
+		<result column="user_nm" property="userNm"/>
+		<result column="leader" property="leader"/>
+		<result column="upd_dt" property="updDt"/>                     
+		<result column="stt_code" property="sttCode"/>                     
+		<result column="position_code" property="positionCode"/>                     
+	</resultMap>
+
+	<select id="selectTeamMembersByTno" resultMap="tmemMap">
+		select b.*,
+		       c.user_nm,
+		       c.position_code
+		  from team a, tmem b, users c
+		 where a.team_no = #{teamNo}
+		   and a.team_no = b.team_no
+		   and b.user_id = c.user_id
+		   and b.stt_code = 1
+		 order by b.leader desc, c.position_code desc
+	</select>
+	
+	<select id="selectTeamMembersByTnoD" resultMap="tmemMap">
+		select b.*,
+		       c.user_nm,
+		       c.position_code
+		  from team a, tmem b, users c
+		 where a.team_no = #{teamNo}
+		   and a.team_no = b.team_no
+		   and b.user_id = c.user_id
+		   and b.stt_code = 3
+		 order by b.leader desc, c.position_code desc
+	</select>
+	
+	<update id="insertTeamMember" parameterType="tmem">
+		insert into
+		tmem (team_no, user_id, leader, upd_dt)
+		values (#{teamNo}, #{userId}, #{leader}, sysdate)
+	</update>
+	
+	<update id="deleteTeamMember">
+		update tmem
+		set stt_code = 3, upd_dt = sysdate
+		where team_no = #{teamNo}
+		  and user_id = #{userId}
+	</update>
+	
+	<update id="updateTeamMember">
+		update tmem
+		set stt_code = 1, upd_dt = sysdate
+		where team_no = #{teamNo}
+		  and user_id = #{userId}
+	</update>
+	
+	
+	
+<!-- 	<update id="updateTeamMemberss" parameterType="tmem"> -->
+<!-- 		merge into tmem  -->
+<!-- 		using dual -->
+<!-- 		on ( -->
+<!-- 			team_no = #{teamNo}, -->
+<!-- 			user_id = #{userId}, -->
+<!-- 		   ) -->
+<!-- 		when not matched then -->
+<!-- 			insert (team_no, user_id, leader, upd_dt) -->
+<!-- 			values (#{teamNo}, #{userId}, 'n', sysdate) -->
+<!-- 		when matched then -->
+<!-- 			update  -->
+<!-- 			   set stt_code = 1, upd_dt = sysdate -->
+<!-- 			 where team_no = #{teamNo} -->
+<!-- 		       and user_id = #{userId} -->
+<!-- 	</update> -->
+	
+	
+	
+	
+	
+	<update id="deleteAllTeamMember">
+		update tmem
+		set stt_code = 3, upd_dt = sysdate
+		where team_no = #{teamNo}
+	</update>
+
+</mapper>

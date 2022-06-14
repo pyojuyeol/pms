@@ -1,0 +1,708 @@
+.cloud-list {
+  .cloud-item {
+    position: relative;
+    .folder_name {
+      overflow: hidden; 
+      white-space: nowrap;
+      width:150px; 
+      text-overflow: ellipsis;
+    }
+    .file_name {
+      overflow: hidden; 
+      white-space: nowrap;
+      width:150px; 
+      text-overflow: ellipsis;
+    }
+    .checkbox {
+      // display: none;
+      position: absolute;
+      top: 6px;
+      left: 6px;
+
+      .input-label {
+        position: absolute;
+        display: block;
+        font-size: 0;
+        color: transparent;
+        line-height: 0;
+        cursor: pointer;
+        z-index: 1;
+
+        &::after {
+          content: "";
+          background-image: linear-gradient(transparent, transparent),
+            url("/pms/resources/images/cloud/cloud_icon2.svg");
+          background-size: 969px 943px;
+          background-position: -844px -850px;
+          width: 28px;
+          height: 28px;
+          display: none;
+        }
+
+        &:hover::after {
+          background-position: -913px -76px !important;
+          display: block;
+        }
+
+      }
+    }
+
+    &:hover {
+      .checkbox .input-label::after {
+        background-position: -844px -850px;
+        display: block;
+      }
+    }
+
+    &.selected {
+      .item-thumb .thumb::before {
+        border-color: #418cff;
+        background-color: rgba(65, 140, 255, 0.2);
+      }
+
+      .checkbox .input-label::after {
+        background-position: -913px -40px;
+        margin: 1px;
+        display: block;
+      }
+    }
+
+
+    .item-thumb {
+      text-align: center;
+
+      .thumb {
+        overflow: hidden;
+        position: relative;
+        display: block;
+        width: 150px;
+        height: 150px;
+        line-height: 150px;
+        cursor: pointer;
+
+        &::before {
+          content: "";
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          border: 1px solid rgba(0, 0, 0, 0.06);
+          z-index: 1;
+        }
+      }
+
+      &:hover {
+        background-color: #DBE4FF;
+      }
+
+      .folder {
+        background-image: linear-gradient(transparent, transparent),
+          url("/pms/resources/images/cloud/cloud_icon.svg");
+        background-size: 1072px 1058px;
+        background-position: -952px -4px;
+        width: 80px;
+        height: 80px;
+        display: inline-block;
+        position: relative;
+        vertical-align: middle;
+      }
+      .file {
+        background-image: linear-gradient(transparent, transparent),
+          url("/pms/resources/images/cloud/cloud_icon.svg");
+        background-size: 1072px 1058px;
+        background-position: -269px -794px;
+        width: 80px;
+        height: 80px;
+        display: inline-block;
+        position: relative;
+        vertical-align: middle;
+      }
+    }
+
+  }
+}
+
+.rightmenu_layer {
+  border: solid 1px #d9d9d9;
+  background-color: #fff;
+  z-index: 250;
+  width: auto;
+  text-align: left;
+  box-shadow: 1px 2px 8px 0 rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+
+  ul {
+    overflow: hidden;
+    position: relative;
+  }
+
+  ul.min_right_ly {
+    min-width: 80px;
+  }
+
+  li {
+    overflow: hidden;
+    position: relative;
+    line-height: 14px;
+    white-space: nowrap;
+
+    &:hover a {
+      background-color: #ebebeb;
+    }
+  }
+
+  li.partition {
+    overflow: hidden;
+    height: 1px;
+    font-size: 0;
+    line-height: 0;
+    background: #e8e8e8;
+  }
+
+  a {
+    display: block;
+    height: 28px;
+    padding: 0 8px;
+    font-size: 12px;
+    line-height: 28px;
+    color: #333;
+    text-decoration: none !important;
+  }
+
+  .bu {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+  }
+}
+
+.bu {
+  background-image: url("/pms/resources/images/cloud/cloud_icon3.png");
+  background-repeat: no-repeat;
+}
+
+.bu_supmenu {
+  overflow: hidden;
+  width: 4px;
+  height: 7px;
+  background-position: -101px -119px;
+}
+
+.rightmenu_first {
+  z-index: 51;
+}
+
+.rightmenu_on,
+.rightmenu_first {
+  ul {
+    width: auto;
+  }
+
+  li.on a {
+    color: #333;
+    background: url("/pms/resources/images/cloud/cloud_icon4.gif") no-repeat 7px 8px;
+  }
+
+  li a {
+    text-indent: 17px;
+    padding-right: 8px;
+  }
+}
+
+input.folder_name {
+  width: 150px;
+  text-align: center;
+}
+
+.task_text {
+  font-size: 13px;
+  line-height: 14px;
+
+  em {
+    color: #4078ff;
+  }
+}
+
+.select {
+  -webkit-box-flex: 0;
+  -ms-flex: none;
+  flex: none;
+  font-weight: 700;
+  color: #9398a0;
+}
+
+.dropdown-menu {
+  .dropdown-item {
+    &:hover {
+      cursor: pointer;
+      background-color: #ebebeb;
+    }
+  }
+}
+
+.task_bottom_area {
+  display: flex;
+  height: 54px;
+}
+
+.task_path_area {
+  flex: 0 1 auto;
+  margin-right: 10px;
+  overflow: hidden;
+}
+
+.deep_path {
+  display: flex;
+  align-items: center;
+  max-width: 100%;
+  height: 54px;
+  box-sizing: border-box;
+  font-size: 17px;
+  line-height: 15px;
+
+    .path_list {
+      display: flex;
+      flex: 0 1 auto;
+      max-width: 100%;
+      align-items: center;
+
+      .path_item {
+        flex: 0 0 auto;
+
+        &:last-child {
+          flex: 0 1 auto;
+          font-weight: bold;
+          white-space: nowrap;
+        }
+        &:hover {
+          cursor : pointer;
+          text-decoration: underline;
+        }
+        &.addNext::after {
+          content: "";
+          background-image: linear-gradient(transparent, transparent), url("/pms/resources/images/cloud/cloud_icon5.svg");
+          background-size: 1023px 990px;
+          background-position: -981px -284px;
+          width: 20px;
+          height: 20px;
+          display: inline-block;
+          margin: 0 3px;
+          vertical-align: top;
+        }
+      }
+
+      a {
+        vertical-align: top;
+        line-height: 20px;
+        color: #000;
+      }
+    }
+}
+
+.task_view_area {
+  -webkit-box-flex: 0;
+  flex: none;
+  margin-left: auto;
+  display: flex;
+  -webkit-box-align: center;
+  align-items: center;
+
+  .btn_view_cover {
+    position: relative;
+    margin-left: 18px;
+
+    button {
+      display: inline-block;
+      overflow: visible;
+      background-color: #fff;
+      color: #333;
+      line-height: 100%;
+      letter-spacing: 0;
+      vertical-align: top;
+      white-space: nowrap;
+      cursor: pointer;
+      -webkit-appearance: none;
+      -webkit-text-size-adjust: none;
+      border-radius: 0;
+    }
+  }
+
+  .btn_view {
+    height: auto;
+    padding: 0;
+    border: 0;
+
+    &::before {
+      display: block;
+      content: '';
+    }
+
+    &.grid::before {
+      background-image: linear-gradient(transparent, transparent), url("/pms/resources/images/cloud/cloud_icon5.svg");
+      background-size: 1023px 990px;
+      background-position: -536px -939px;
+      width: 20px;
+      height: 20px;
+    }
+
+    &.grid.selected::before {
+      background-image: linear-gradient(transparent, transparent), url("/pms/resources/images/cloud/cloud_icon5.svg");
+      background-size: 1023px 990px;
+      background-position: -480px -939px;
+      width: 20px;
+      height: 20px;
+    }
+
+    &.list::before {
+      background-image: linear-gradient(transparent, transparent), url("/pms/resources/images/cloud/cloud_icon5.svg");
+      background-size: 1023px 990px;
+      background-position: -953px -772px;
+      width: 20px;
+      height: 20px;
+    }
+
+    &.list.selected::before {
+      background-image: linear-gradient(transparent, transparent), url("/pms/resources/images/cloud/cloud_icon5.svg");
+      background-size: 1023px 990px;
+      background-position: -953px -612px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  .ly_icon_tooltip {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    height: 24px;
+    margin-top: 7px;
+    padding: 0 7px;
+    border-radius: 4px;
+    background-color: rgba(0, 0, 0, 0.7);
+    font-size: 12px;
+    line-height: 24px;
+    white-space: nowrap;
+    transform: translateX(-50%);
+    color: #fff;
+    visibility: hidden;
+    opacity: 0;
+    transition: all 0.06s ease-out 0.04s;
+    pointer-events: none;
+
+    &::before {
+      bottom: 100%;
+      left: 50%;
+      border: solid transparent;
+      content: "";
+      height: 0;
+      width: 0;
+      position: absolute;
+      pointer-events: none;
+      border-color: rgba(0, 0, 0, 0);
+      border-bottom-color: rgba(0, 0, 0, 0.7);
+      border-width: 4px;
+      margin-left: -4px;
+    }
+  }
+}
+
+.array_cover+.btn_view_cover {
+  margin-left: 20px;
+}
+
+.cursor_pointer {
+  cursor: pointer;
+}
+
+.blind {
+  position: absolute;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  margin: -1px;
+  width: 1px;
+  height: 1px;
+}
+
+.array_cover {
+  position: relative;
+
+  a {
+    text-decoration: none;
+
+    &:hover {
+      cursor: pointer;
+    }
+  }
+
+  .array_option {
+    display: block;
+    line-height: 14px;
+    color: #000;
+
+    &::after {
+      background-image: linear-gradient(transparent, transparent), url("/pms/resources/images/cloud/cloud_icon5.svg");
+      background-size: 1023px 990px;
+      background-position: -778px -321px;
+      width: 12px;
+      height: 12px;
+      display: inline-block;
+      margin: 1px 0 0 3px;
+      vertical-align: top;
+      content: '';
+    }
+  }
+
+  .ly_task {
+    right: 0;
+    left: auto;
+
+    ul {
+      min-width: 138px;
+      box-sizing: border-box;
+
+      a {
+        padding-right: 28px;
+      }
+    }
+  }
+
+  &.open {
+    .ly_task {
+      visibility: visible;
+      opacity: 1;
+      transform: scale(1) translateY(0%);
+      transition-delay: 0s, 0s, 0.4s;
+      pointer-events: auto;
+    }
+
+    .array_option::after {
+      background-position: -785px -848px;
+    }
+  }
+}
+
+.ly_task {
+  position: absolute;
+  top: 100%;
+  margin-top: 6px;
+  font-size: 14px;
+  white-space: nowrap;
+  z-index: 20;
+  visibility: hidden;
+  opacity: 0;
+  transform: scale(1) translateY(-1em);
+  transition: all 0.06s ease-out 0.04s;
+  pointer-events: none;
+
+  ul {
+    padding: 6px;
+    border-radius: 6px;
+    background-color: #fff;
+    box-shadow: 1px 2px 8px 0 rgba(0, 0, 0, 0.15);
+
+    a {
+      display: block;
+      height: 32px;
+      padding: 0 14px;
+      border-radius: 4px;
+      line-height: 32px;
+      color: #000;
+    }
+
+    .selected {
+      a {
+        position: relative;
+        font-weight: 700;
+        color: #4078ff;
+
+        &::after {
+          background-image: linear-gradient(transparent, transparent), url("/pms/resources/images/cloud/cloud_icon5.svg");
+          background-size: 1023px 990px;
+          background-position: -85px -967px;
+          width: 18px;
+          height: 18px;
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          right: 9px;
+          margin: auto;
+          content: '';
+        }
+      }
+    }
+  }
+}
+
+.list_area {
+  position: relative;
+  height: 100%;
+
+  .input_check {
+    float: left;
+    width: 20px;
+    height: 20px;
+    padding: 9px 5px;
+    &::before {
+      background-image: linear-gradient(transparent, transparent), url(https://ssl.pstatic.net/static/pwe/cloud/img/sprite/sp_cloudsvg_31ed712b.svg);
+      background-size: 1023px 990px;
+      background-position: -981px -116px;
+      width: 20px;
+      height: 20px;
+      content: '';
+      display: block;
+      position: relative;
+      z-index: 1;
+      cursor: pointer;
+    }
+  }
+}
+
+.list_type_detail {
+  display: flex;
+  width: 100%;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  flex-direction: column;
+
+  .cell {
+    // display: table-cell;
+    // vertical-align: middle;
+    &.check {
+      width: 5%;
+      padding: 0.75rem;
+      text-align: center;
+      vertical-align: middle;
+      .checkbox {
+        text-align: center;
+        vertical-align: middle;
+        position: relative;
+        top: 7px;
+        left: 7px;
+      }
+    }
+
+    &.star {
+      padding: 0.75rem;
+      width: 36px;
+    }
+
+    &.type {
+      width: 10%;
+      padding: 0.75rem;
+    }
+
+    &.info {
+      padding: 0.75rem;
+      width: 55%;
+      padding-right: 15px;
+      box-sizing: border-box;
+    }
+
+    &.size {
+      width: 10%;
+      padding: 0.75rem;
+      padding-right: 15px;
+      text-align: center;
+    }
+
+    &.date_edit {
+      width: 20%;
+      padding: 0.75rem;
+      text-align: center;
+    }
+  }
+  .list_head {
+    position: relative;
+    display: flex;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+  }
+  .list_detail {
+    display: flex;
+    width: 100%;
+    .row.selected{
+      background: #ECF1FF;
+    }
+
+    /* .info {
+      .inner {
+        display: inline-flex;
+      -webkit-box-orient: horizontal;
+      -webkit-box-direction: reverse;
+      flex-direction: row-reverse;
+      -webkit-box-pack: end;
+      justify-content: flex-end;
+      max-width: 100%;
+      vertical-align: top;
+      }
+      .fnc {
+        -webkit-box-flex: 0;
+        flex: 0 0 auto;
+        margin-right: 8px;
+      }
+    } */
+  }
+
+  .row {
+    display: table-row;
+    &:hover {
+      background-color: #ECF1FF;
+    }
+    &.selected:hover {
+      background-color: #DBE4FF;
+    }
+  }
+
+  .sort_option {
+    width: 100%;
+    margin: 0;
+    border-top: 1px solid #ebebeb;
+    border-bottom: 1px solid #ebebeb;
+    color: #888;
+
+    .btn_star {
+      background-image: linear-gradient(transparent, transparent), url("/pms/resources/images/cloud/cloud_icon5.svg");
+      background-size: 1023px 990px;
+      background-position: -908px -910px;
+      width: 20px;
+      height: 20px;
+      margin-right: 4px;
+      padding: 0;
+      border: 0;
+      background-color: transparent;
+      line-height: 27px;
+    }
+
+    .btn_sort {
+      height: 100%;
+      padding: 0;
+      border: 0;
+      background-color: transparent;
+      line-height: 27px;
+      color: #62636d;
+    }
+  }
+
+  .folder {
+    background-image: linear-gradient(transparent, transparent), url("/pms/resources/images/cloud/cloud_icon6.svg");
+    background-size: 1072px 1058px;
+    background-position: -1040px -400px;
+    width: 28px;
+    height: 28px;
+    display: inline-block;
+    position: relative;
+    vertical-align: middle;
+  }
+  .file {
+    background-image: linear-gradient(transparent, transparent), url("/pms/resources/images/cloud/cloud_icon6.svg");
+    background-size: 1072px 1058px;
+    background-position: -1040px -580px;
+    width: 28px;
+    height: 28px;
+    display: inline-block;
+    position: relative;
+    vertical-align: middle;
+  }
+}

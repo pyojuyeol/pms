@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Reply-Mapper">
+   
+	<resultMap type="reply" id="workReplyMap">
+		<result column="REPLY_NO" property="replyNo"/>
+		<result column="REPLY_SEQ" property="replySeq"/>
+		<result column="UP_REPLY_NO" property="upReplyNo"/>
+		<result column="UP_REPLY_SEQ" property="upReplySeq"/>
+		<result column="CONTENT" property="content"/>
+		<result column="URL" property="url"/>
+		<result column="REGISTER" property="register"/>
+		<result column="REG_DT" property="regDt"/>
+		<result column="DEL_DT" property="delDt"/>
+		<result column="UPD_DT" property="updDt"/>
+		<result column="STT_CODE" property="sttCode"/>
+
+		<result column="USER_NM" property="userNm"/>
+	</resultMap>
+
+<!-- Work Reply -->
+	<select id="selectWorkReplyList" parameterType="int" resultMap="workReplyMap">
+		select a.*,
+		       c.user_nm
+		  from reply a, work b, users c
+		 where b.work_no = #{workNo}
+		   and b.work_no = a.reply_no
+		   and a.register = c.user_id
+		   and a.STT_CODE != 'd'
+		 order by a.REG_DT asc
+	</select>
+	
+	<select id="replyListTotalCount" resultType="int">
+		select count(reply_no) 
+		from reply
+		where REPLY_NO = #{replyNo}
+		and STT_CODE != 'd'
+	</select>
+	
+	<select id="selectWorkRnoByWorkNo" resultType="int">
+		select REPLY_NO
+		from work
+		where WORK_NO = #{workNo} 
+	</select>
+
+	
+	<update id="insertReply">
+		insert into
+		reply
+		(REPLY_NO, REPLY_SEQ, CONTENT, URL, REGISTER, REG_DT, STT_CODE)
+		values
+		(#{replyNo}, reply_seq.nextval, #{content}, 'url', #{register}, sysdate, 'u')
+	</update>
+	
+	<update id="updateReply" parameterType="reply">
+		update reply
+		set
+		CONTENT = #{content}, UPD_DT = sysdate
+		where REPLY_SEQ = #{replySeq}
+	</update>   
+	
+	<update id="deleteReply" parameterType="int">
+		update reply
+		set STT_CODE = 'd',
+		DEL_DT = sysdate
+		where REPLY_SEQ = #{replySeq}
+	</update>
+	
+	<update id="deleteAllReply" parameterType="int">
+		update reply
+		set STT_CODE = 'd',
+		DEL_DT = sysdate
+		where REPLY_NO = #{replyNo}      
+	</update>
+	
+	<select id="selectReplySeqNext" resultType="int" >
+		select REPLY_SEQ.NEXTVAL as reply_seq from dual
+	</select>
+	
+</mapper>

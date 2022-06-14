@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Project-Mapper">
+
+	<resultMap type="project" id="projectMap">
+		<result column="prj_no" property="prjNo"/>
+		<result column="prj_nm" property="prjNm"/>
+		<result column="prj_comment" property="prjComment"/>
+		<result column="enabled" property="enabled"/>
+		<result column="stt_code" property="sttCode"/>
+		<result column="reg_dt" property="regDt"/>
+		<result column="bgn_dt" property="bgnDt"/>
+		<result column="end_dt" property="endDt"/>
+		<result column="favorites" property="favorites"/>
+		<result column="team_no" property="teamNo"/>
+		<result column="team_nm" property="teamNm"/>
+	</resultMap>
+
+	<sql id="searchStt">
+			<if test="sttCode != ''">
+			and stt_code = #{sttCode}
+		</if>
+	</sql>
+
+	<sql id="search">
+		<if test="searchType == 'nm'.toString()">
+			and prj_nm like '%'||#{keyword}||'%'
+		</if>
+<!-- 		<if test="searchType == 'l'.toString()"> -->
+<!-- 			and prjLeader like '%'||#{keyword}||'%' -->
+<!-- 		</if> -->
+	</sql>
+	
+	<select id="selectSearchProjectList" resultMap="projectMap">
+		select *
+		from project
+		where prj_no is not null
+		and stt_code != 'd'
+		<include refid="searchStt" />
+		<include refid="search" />
+		order by prj_no desc
+	</select>
+
+	<select id="selectSearchRecordList" resultMap="projectMap">
+		select *
+		from project
+		where prj_no is not null
+		and enabled = 'y'
+		and stt_code != 'd'
+<!-- 		<include refid="search" /> -->
+		order by prj_no desc
+	</select>
+	
+	<select id="selectSearchProjectListCount" resultType="int">
+		select count(*)
+		from project
+		where prj_no is not null
+		<include refid="searchStt" />
+		<include refid="search" />
+		order by prj_no desc
+	</select>
+	
+	<select id="selectProjectByPno" resultMap="projectMap">
+		select a.*,
+		       b.team_nm
+		from project a, team b
+		where a.prj_no = #{prjNo}
+		  and a.team_no = b.team_no
+	</select>
+	
+	<update id="insertProject" parameterType="project">
+		insert into
+		project
+			(prj_no, team_no, prj_nm, prj_comment, enabled, stt_code, reg_dt, bgn_dt, end_dt)
+		values 
+			(#{prjNo}, #{teamNo}, #{prjNm}, #{prjComment}, #{enabled}, #{sttCode}, sysdate, #{bgnDt}, #{endDt})
+	</update>
+	
+	<update id="updateProject" parameterType="project">
+		update project
+		set prj_nm = #{prjNm}, prj_comment = #{prjComment}, team_no = #{teamNo},
+		 	enabled = #{enabled}, bgn_dt = #{bgnDt}, end_dt = #{endDt}
+		where prj_no = #{prjNo}
+	</update>
+	
+	<update id="deleteProject">
+		update project
+		set stt_code = 'd', enabled = 'n'
+		where prj_no = #{prjNo}
+	</update>
+	
+	<select id="selectProjectSeqNext" resultType="int">
+		select project_seq.nextval as prj_no from dual
+	</select>
+
+	<select id="selectJoinProjectListById" parameterType="str" resultMap="projectMap">
+		select c.*
+		  from users a, prj_user b, project c
+ 		 where a.user_id = #{userId}
+ 		   and a.user_id = b.user_id
+ 		   and b.prj_no = c.prj_no
+ 		   and c.stt_code != 'd'
+	</select>
+
+	<select id="selectTeamProjectListById" parameterType="str" resultMap="projectMap">
+		select c.*
+		  from tmem a, team b, project c
+		 where a.user_id = #{userId}
+		   and a.team_no = b.team_no
+		   and b.team_no = c.team_no
+		   and c.stt_code != 'd'
+	</select>
+	
+	<select id="selectTeamProjectListByTno" parameterType="int" resultMap="projectMap">
+		select b.*
+		  from team a, project b
+		 where a.team_no = #{teamNo}
+		   and a.team_no = b.team_no
+		   and b.stt_code != 'd'
+	</select>
+	<select id="selectTeamProceedingProjectListByTno" parameterType="int" resultMap="projectMap">
+		select b.*
+		  from team a, project b
+		 where a.team_no = #{teamNo}
+		   and a.team_no = b.team_no
+		   and b.stt_code != 'd'
+		   and b.stt_code = 'p'
+	</select>
+	<select id="selectTeamCompleteProjectListByTno" parameterType="int" resultMap="projectMap">
+		select b.*
+		  from team a, project b
+		 where a.team_no = #{teamNo}
+		   and a.team_no = b.team_no
+		   and b.stt_code != 'd'
+		   and b.stt_code = 'c'
+	</select>
+
+	<select id="selectProceedingPrjListCount" parameterType="int" resultType="int">
+		select count(*)
+		from project
+		where team_no = #{teamNo}
+		  and stt_code = 'p'
+	</select>
+	
+	<select id="selectCompletePrjListCount" parameterType="int" resultType="int">
+		select count(*)
+		from project
+		where team_no = #{teamNo}
+		  and stt_code = 'c'
+	</select>
+	
+	<select id="selectHoldPrjListCount" parameterType="int" resultType="int">
+		select count(*)
+		from project
+		where team_no = #{teamNo}
+		  and stt_code = 'h'
+	</select>
+
+</mapper>

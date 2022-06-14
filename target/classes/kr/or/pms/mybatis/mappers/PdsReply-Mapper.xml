@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="PdsReply-Mapper">
+	
+	<resultMap type="reply" id="replyMap">
+		<result column="REPLY_NO" property="replyNo"/>
+		<result column="REPLY_SEQ" property="replySeq"/>
+		<result column="UP_REPLY_NO" property="upReplyNo"/>
+		<result column="UP_REPLY_SEQ" property="upReplySeq"/>
+		<result column="CONTENT" property="content"/>
+		<result column="URL" property="url"/>
+		<result column="REGISTER" property="register"/>
+		<result column="REG_DT" property="regDt"/>
+		<result column="DEL_DT" property="delDt"/>
+		<result column="UPD_DT" property="updDt"/>
+		<result column="STT_CODE" property="sttCode"/>
+	</resultMap>
+
+	<!-- Pds Reply Query -->
+	<select id="selectReplyList" parameterType="int" resultMap="replyMap">
+       select a.* from reply a, pds b
+        where b.REPLY_NO = a.REPLY_NO
+		  and b.PDS_NO = #{pdsNo} 
+          and a.stt_code != 'del'
+		order by a.REG_DT asc
+	</select>
+
+	
+	<select id="countReply" resultType="int">
+	 select count(reply_no) 
+	   from reply
+	  where reply_no=#{reply_no}
+	    and stt_code!='del'
+	</select>
+	
+	<select id="selectPdsRnoByPdsNo" parameterType="int" resultType="int">
+       select reply_no
+         from pds
+        where pds_no=#{pdsNo} 
+	</select>
+		
+	<!-- 1개의 게시판에 달린 리플의 총 갯수 
+	<select id="countReply" resultType="int">
+	    select count(REPLY_NO)
+		  from reply
+		 where reply_no=#{replyNo}
+	</select>-->
+
+	<select id="selectReplySeqNextValue" resultType="int" >
+		select REPLY_NO_SEQ.NEXTVAL
+		from dual	
+	</select>
+
+	<update id="insertReply">
+<!-- 		INSERT INTO 
+		reply (REPLY_NO, REPLY_SEQ, CONTENT, REGISTER, REG_DT, STT_CODE)
+		VALUES (#{replyNo}, REPLY_SEQ_SEQ.NEXTVAL, #{content}, #{register},SYSDATE,'used')  -->   
+		insert into reply(reply_no,reply_seq,content,url,register,reg_dt,stt_code)
+		values(#{replyNo},reply_seq_seq.nextval,#{content},'url',#{register},sysdate,'used')    
+	</update>
+
+	<update id="updateReply" parameterType="reply">
+		update reply 
+		set 
+		content=#{content},
+		upd_dt=sysdate
+		where reply_seq=#{replySeq}		
+	</update>	
+
+	<update id="deleteReply" parameterType="int">
+		update reply 
+		   set stt_code='del',
+			   del_dt=sysdate
+		 where reply_seq=#{replySeq}		
+	</update>
+	
+	<update id="deleteAllReply" parameterType="int">
+		update reply 
+		   set stt_code='del',
+			   del_dt=sysdate
+		where reply_no=#{replyNo}		
+	</update>
+	
+</mapper>

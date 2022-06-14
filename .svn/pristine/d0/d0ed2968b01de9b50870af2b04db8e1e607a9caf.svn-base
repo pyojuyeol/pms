@@ -1,0 +1,130 @@
+package kr.or.pms.service;
+
+import java.text.SimpleDateFormat;
+import java.util.List;
+
+import kr.or.pms.dao.ComCodeDAO;
+import kr.or.pms.dao.WorkLogDAO;
+import kr.or.pms.dto.ComCodeVO;
+import kr.or.pms.dto.WorkLogVO;
+import kr.or.pms.dto.WorkVO;
+
+public class WorkLogServiceImpl implements WorkLogService {
+
+	private WorkLogDAO workLogDAO;
+	public void setWorkLogDAO(WorkLogDAO workLogDAO) {
+		this.workLogDAO = workLogDAO;
+	}
+	private ComCodeDAO comCodeDAO;
+	public void setComCodeDAO(ComCodeDAO comCodeDAO) {
+		this.comCodeDAO = comCodeDAO;
+	}
+	
+	@Override
+	public void regist(WorkVO newWork, WorkVO oldWork) throws Exception {
+		
+		WorkLogVO workLog = new WorkLogVO();
+		workLog.setWorkNo(newWork.getWorkNo());
+		workLog.setUpdater(newWork.getWorkUpdater());
+		
+		// upWork
+		String oldUpWorkStr = oldWork.getUpWork() + "";
+		String newUpWorkStr = newWork.getUpWork() + "";
+		if (!newUpWorkStr.equals(oldUpWorkStr)) {
+			workLog.setWhat("상위일감");
+			workLog.setBefore("#" + oldUpWorkStr);
+			workLog.setAfter("#" + newUpWorkStr);
+			workLogDAO.insertWorkLog(workLog);
+		}
+		
+		// workTitle
+		String oldTitleStr = oldWork.getWorkTitle();
+		String newTitleStr = newWork.getWorkTitle();
+		if (!newTitleStr.equals(oldTitleStr)) {
+			workLog.setWhat("제목");
+			workLog.setBefore(oldTitleStr);
+			workLog.setAfter(newTitleStr);
+			workLogDAO.insertWorkLog(workLog);
+		}
+		
+		// workComment
+		String oldCommentStr = oldWork.getWorkComment();
+		String newCommentStr = newWork.getWorkComment();
+		if (oldCommentStr != null && !oldCommentStr.equals("")) {
+			if (!newCommentStr.equals(oldCommentStr)) {
+				workLog.setWhat("내용");
+				workLog.setBefore(oldCommentStr.replace("<p>", "").replace("</p>", ""));
+				workLog.setAfter(newCommentStr.replace("<p>", "").replace("</p>", ""));
+				workLogDAO.insertWorkLog(workLog);
+			}
+		}
+		
+		// worker
+		String oldWokerStr = oldWork.getWorker();
+		String newWokerStr = newWork.getWorker();
+		if (!newWokerStr.equals(oldWokerStr)) {
+			workLog.setWhat("담당자");
+			workLog.setBefore(newWokerStr);
+			workLog.setAfter(newWokerStr);
+			workLogDAO.insertWorkLog(workLog);
+		}
+		
+		// sttCode
+		List<ComCodeVO> workSttList = comCodeDAO.selectComCodeListByCodeGrp("WORKSTT");
+		String oldSttCodeStr = oldWork.getSttCode();
+		String newSttCodeStr = newWork.getSttCode();
+		if (!newSttCodeStr.equals(oldSttCodeStr)) {
+			workLog.setWhat("상태");
+			for (ComCodeVO workStt : workSttList) {
+				if (workStt.getCode().equals(oldSttCodeStr)) workLog.setBefore(workStt.getNm());
+				if (workStt.getCode().equals(newSttCodeStr)) workLog.setAfter(workStt.getNm());
+			}
+			workLogDAO.insertWorkLog(workLog);
+		}
+		
+		// IpcrCode
+		List<ComCodeVO> ipcrList = comCodeDAO.selectComCodeListByCodeGrp("IPCR");
+		String newIpcrCodeStr = newWork.getIpcrCode();
+		String oldIpcrCodeStr = oldWork.getIpcrCode();
+		if (!newIpcrCodeStr.equals(oldIpcrCodeStr)) {
+			workLog.setWhat("우선순위");
+			for (ComCodeVO ipcr : ipcrList) {
+				if (ipcr.getCode().equals(oldIpcrCodeStr)) workLog.setBefore(ipcr.getNm());
+				if (ipcr.getCode().equals(newIpcrCodeStr)) workLog.setAfter(ipcr.getNm());
+			}
+			workLogDAO.insertWorkLog(workLog);
+		}
+		
+		// workRate
+		String oldRateStr = oldWork.getWorkRate() + "";
+		String newRateStr = newWork.getWorkRate() + "";
+		if (!newRateStr.equals(oldRateStr)) {
+			workLog.setWhat("진척도");
+			workLog.setBefore(oldRateStr + "%");
+			workLog.setAfter(newRateStr + "%");
+			workLogDAO.insertWorkLog(workLog);
+		}
+		
+		// 날짜 형식 변환 (Date -> String)
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+		// bgnDt
+		String oldBgnDtStr = formatter.format(oldWork.getBgnDt());
+		String newBgnDtStr = formatter.format(newWork.getBgnDt());
+		if (!newBgnDtStr.equals(oldBgnDtStr)) {
+			workLog.setWhat("시작일자");
+			workLog.setBefore(oldBgnDtStr);
+			workLog.setAfter(newBgnDtStr);
+			workLogDAO.insertWorkLog(workLog);
+		}
+		// endDt
+		String oldEndDtStr = formatter.format(oldWork.getEndDt());
+		String newEndDtStr = formatter.format(newWork.getEndDt());
+		if (!newEndDtStr.equals(oldEndDtStr)) {
+			workLog.setWhat("완료기한");
+			workLog.setBefore(oldEndDtStr);
+			workLog.setAfter(newEndDtStr);
+			workLogDAO.insertWorkLog(workLog);
+		}
+	}
+	
+}

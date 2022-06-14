@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-config.dtd">
+  
+<configuration>
+	<typeAliases>
+		
+		<!-- ==== 기본세팅 시작 ==== -->
+  		<typeAlias type="java.lang.String" alias="str"/>
+  		<typeAlias type="java.lang.Integer" alias="int"/>
+		<!-- ==== 기본세팅 끝 ==== -->
+		
+
+		<!-- ============================================================= -->
+		
+		
+		
+  		<!-- ==== 공통사항 시작 ==== -->
+		
+		<!--공통코드 -->
+		<typeAlias type="kr.or.pms.dto.ComCodeVO" alias="comCode"/>
+
+		<!-- 메뉴 -->
+		<typeAlias type="kr.or.pms.dto.MenuVO" alias="menu"/>
+
+		<!-- 메일 보내기 탬플릿 -->
+  		<typeAlias type="kr.or.pms.dto.HtmlTempVO" alias="htmlTemp"/>
+  		
+		<!-- 클라우드 -->
+		<typeAlias type="kr.or.pms.dto.CloudDirectoryVO" alias="cloudDirectory"/>
+		<typeAlias type="kr.or.pms.dto.CloudVO" alias="cloud"/>
+
+		<!-- ==== 공통사항 끝 ==== -->
+		
+		
+		
+		<!-- ============================================================= -->
+
+  		
+  		
+  		<!-- ==== 관리자 시작 ==== -->
+  		
+  		<!-- DB 관리 -->
+		<typeAlias type="kr.or.pms.dto.DbVO" alias="db"/>
+		<typeAlias type="kr.or.pms.dto.DbcnVO" alias="dbcn"/>
+		<typeAlias type="kr.or.pms.dto.DbTypeVO" alias="dbType"/>
+		<typeAlias type="kr.or.pms.dto.DbRsrvVO" alias="dbRsrv"/>
+		
+		<!-- Log 관리 죠세프야 내꺼랑 붙여놓지마라구 눈아파 못찾아 -->
+		<typeAlias type="kr.or.pms.dto.SystemSchedulerLogVO" alias="sysSchedLog"/>
+		<typeAlias type="kr.or.pms.dto.FileLogVO" alias="fileLog"/>
+		<typeAlias type="kr.or.pms.dto.ConnectLogVO" alias="connectLog"/>
+		<typeAlias type="kr.or.pms.dto.DbcnLogVO" alias="dbcnLog"/>
+		
+		
+  		<!-- ==== 관리자 끝 ==== -->
+  		
+  		
+  		
+  		
+		<!-- ============================================================= -->
+
+  		
+  		
+  		<!-- ==== 사용자 시작 ==== -->
+  		
+  		<!-- user -->
+  		<typeAlias type="kr.or.pms.dto.UserVO" alias="user"/>
+  		<typeAlias type="kr.or.pms.dto.RecoverPwdVO" alias="recoverPwd"/>
+
+		<!-- 알림 -->		
+		<typeAlias type="kr.or.pms.dto.PushVO" alias="push"/>
+		
+
+  		<!-- ==== 사용자 끝 ==== -->
+		
+		
+		
+		<!-- ============================================================= -->
+		
+		
+		
+		<!-- ==== 프로젝트 시작 ==== -->
+		
+		<typeAlias type="kr.or.pms.dto.ProjectVO" alias="project"/>
+		<typeAlias type="kr.or.pms.dto.PrjUserVO" alias="prjUser"/>
+		<typeAlias type="kr.or.pms.dto.ProjectVO" alias="prjJoin"/>
+		<typeAlias type="kr.or.pms.dto.WorkVO" alias="work"/>
+		<typeAlias type="kr.or.pms.dto.WorkLogVO" alias="workLog"/>
+		
+		<typeAlias type="kr.or.pms.dto.PdsVO" alias="pds"/>
+		<typeAlias type="kr.or.pms.dto.ReplyVO" alias="reply"/>
+		<typeAlias type="kr.or.pms.dto.IssueVO" alias="issue"/>
+		<typeAlias type="kr.or.pms.dto.BookMarkVO" alias="bookMark"/>
+		
+		<typeAlias type="kr.or.pms.dto.AttachVO" alias="attach"/>
+		<typeAlias type="kr.or.pms.dto.NoticeVO" alias="notice"/>
+		<typeAlias type="kr.or.pms.dto.HistoryVO" alias="history"/>
+		<typeAlias type="kr.or.pms.dto.ScheduleVO" alias="schedule"/>
+		<typeAlias type="kr.or.pms.dto.ReportVO" alias="report"/>
+		<typeAlias type="kr.or.pms.dto.ProceedingsVO" alias="proceedings"/>
+		<typeAlias type="kr.or.pms.dto.PrcdUserVO" alias="prcdUser"/>
+
+		<typeAlias type="kr.or.pms.dto.TeamVO" alias="team"/>
+		<typeAlias type="kr.or.pms.dto.TmemVO" alias="tmem"/>
+		<typeAlias type="kr.or.pms.dto.TmemLogVO" alias="tmemLog"/>
+
+		<typeAlias type="kr.or.pms.dto.FavoritesVO" alias="favorites"/>
+	
+		<!-- ==== 프로젝트 끝 ==== -->
+
+
+
+		
+	
+	</typeAliases>
+</configuration>

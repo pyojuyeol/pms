@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Report-Mapper">
+	<resultMap type="report" id="reportMap">
+		<result column="REP_NO" property="repNo"/>
+		<result column="PRJ_NO" property="prjNo"/>
+		<result column="REP_REGISTER" property="repRegister"/>
+		<result column="APPROVER" property="approver"/>
+		<result column="TITLE" property="title"/>
+		<result column="REP_CONTENT" property="repContent"/>
+		<result column="SUB_CONTENT" property="subContent"/>
+		<result column="ETC_CONTENT" property="etcContent"/>
+		<result column="STT_CODE" property="sttCode"/>
+		<result column="REG_DT" property="regDt"/>
+		<result column="SUBMIT_DT" property="submitDt"/>
+		<result column="APPR_DT" property="apprDt"/>
+		<result column="RETURN_DT" property="returnDt"/>
+		<result column="CTG_CODE" property="ctgCode"/>
+		<result column="REPLY_NO" property="replyNo"/>
+		<result column="ATTACH_NO" property="attachNo"/>
+		<result column="PRJ_NM" property="prjNm"/>
+		<result column="USER_NM" property="userNm"/>
+		<result column="user_id" property="userId"/>
+		<result column="TEAM_NM" property="team_nm"/>
+		<result column="PRJ_ROLE" property="prjRole"/>
+	</resultMap>
+	
+ 	<sql id="search">
+		<if test="meetDe != '0'.toString()">
+			and meet_de BETWEEN TO_DATE(#{bgnDt}) AND TO_DATE(#{endDt}+1)
+		</if>
+		<if test="searchType == 't'.toString()">
+			and title like '%'||#{keyword}||'%'			
+		</if>
+		<if test="searchType == 'c'.toString()">
+			and content like '%'||#{keyword}||'%'			
+		</if>
+		<if test="searchType == 'tc'.toString()">
+			and (
+			title like '%'||#{keyword}||'%'
+			or
+			content like '%'||#{keyword}||'%'						
+			)			
+		</if>
+	</sql>
+	
+	<!-- 내가 작성한 일일업무보고 목록 조회 -->
+	<select id="selectMyDailyReportList" resultMap="reportMap">
+		 select rownum, x.*
+		  from (select a.*, b.user_nm
+				  from REPORT a
+			inner join users b
+					on a.approver = b.user_id
+		         where a.prj_no = #{prjNo}
+				   and a.stt_code = 'send'
+				   and a.ctg_code = 'day'
+				   and a.rep_register = #{repRegister}
+			  order by submit_dt desc) x     
+	</select>
+	
+	<select id="countMyDailyReportList" resultType="int">
+		select count(*)
+		  from report
+		 where Rep_Register = #{repRegister}
+		   and prj_no = #{prjNo}
+		   and ctg_code = 'day'
+		   and stt_code = 'send'
+	</select>
+	
+	<!-- 내가 작성한 월업무보고 목록 조회 -->
+	<select id="selectMyMonthlyReportList" resultMap="reportMap">
+		 select rownum, x.*
+		  from (select a.*, b.user_nm
+				  from REPORT a
+			inner join users b
+					on a.approver = b.user_id
+		         where a.prj_no = #{prjNo}
+				   and a.stt_code = 'send'
+				   and a.ctg_code = 'month'
+				   and a.rep_register = #{repRegister}
+			  order by submit_dt desc) x     	   
+	</select>
+	
+	<select id="countMyMonthlyReportList" resultType="int">
+		select count(*)
+		  from report
+		 where Rep_Register = #{repRegister}
+		   and prj_no = #{prjNo}
+		   and ctg_code = 'month'
+		   and stt_code = 'send'
+	</select>
+	
+	<!-- 내가 작성한 임시저장 보고서 목록 조회 -->
+	<select id="selectMyTempReportList" resultMap="reportMap">
+		select rownum, x.*
+		  from (select a.*, b.user_nm
+				  from REPORT a
+			inner join users b
+					on a.approver = b.user_id
+		         where a.prj_no = #{prjNo}
+				   and a.stt_code = 'temp'
+                   and a.rep_register = #{repRegister}
+			  order by reg_dt desc) x   
+	</select>
+	<select id="countMyTempReportList" resultType="int">
+		select count(*)
+		  from report
+		 where Rep_Register = #{repRegister}
+		   and prj_no = #{prjNo}
+		   and stt_code = 'temp'
+	</select>
+	
+	<!-- 내가 받은 일일 업무보고 리스트 -->
+	<select id="selectReceivedDailyReportList" resultMap="reportMap">
+		select rownum,
+			   x.*
+		  from (select a.*, b.user_nm
+				  from REPORT a
+			inner join users b
+					on a.REP_REGISTER = b.user_id
+		         where a.prj_no = #{prjNo}
+				   and a.stt_code = 'send'
+				   and a.Approver = #{approver}
+				   and a.ctg_code = 'day'
+			  order by submit_dt desc) x
+	</select>
+	<select id="countReceivedDailyReport" resultType="int">
+		select count(*)
+		  from report
+		 where prj_no = #{prjNo}
+		   and stt_code = 'send'
+		   and Approver = #{approver}
+		   and ctg_code = 'day'
+	</select>
+	
+	<!-- 내가 받은 월  업무보고 리스트 -->
+	<select id="selectReceivedMonthReportList" resultMap="reportMap">
+		select rownum,
+			   x.*
+		  from (select a.*, b.user_nm
+				  from REPORT a
+			inner join users b
+					on a.REP_REGISTER = b.user_id
+		         where a.prj_no = #{prjNo}
+				   and a.stt_code = 'send'
+				   and a.Approver = #{approver}
+				   and a.ctg_code = 'month'
+			  order by submit_dt desc) x
+	</select>
+	<select id="countReceivedMonthReport" resultType="int">
+		select count(*)
+		  from report
+		 where prj_no = #{prjNo}
+		   and stt_code = 'send'
+		   and Approver = #{approver}
+		   and ctg_code = 'month'
+	</select>
+	
+	<!-- 로그인한 사용자가 역할(pl/pm)인지 조회 -->
+	<select id="loginUserIsPlOrPm" resultType="Str">
+		select Prj_Role
+		  from prj_user
+		 where prj_no = #{prjNo}
+	       and user_id = #{userId}
+		   and stt_code='e'
+	</select>
+	
+	<!-- 소속한 팀의 pl 리스트 가져오기 -->
+	<select id="selectProjectPlList" resultMap="reportMap">
+		select a.*, b.user_nm
+		  from prj_user a
+	inner join users b
+			on a.user_id = b.user_id
+		 where a. prj_no = #{prjNo}
+		   and a. prj_role='PL'
+	</select>
+	
+	<!-- 소속한 팀 이름 가져오기 -->
+	<select id="selectMyTeamName" resultType="Str">
+		select team_nm
+		  from team
+		  where team_no = (select team_no
+		                     from project
+		                    where prj_no = #{prjNo})
+	</select>
+	
+	<!-- pm 아이디 소팅 -->
+	<select id="selectPMid" resultType="Str">
+		select User_Id
+		  from prj_user
+		 where prj_no = #{prjNo}
+ 		   and Prj_Role='PM'
+	</select>
+	
+	<!-- 일일업무보고 등록 -->
+	<select id="repNoSeq" resultType="int">
+		select REPORT_SEQ.NEXTVAL as repNo from dual
+	</select>
+	
+	<insert id="insertDailyReport" parameterType="report">
+		insert into 
+		report
+			(REP_NO,PRJ_NO,REP_REGISTER,APPROVER,TITLE,
+			REP_CONTENT,SUB_CONTENT,ETC_CONTENT,STT_CODE,SUBMIT_DT,REG_DT,CTG_CODE)
+		values
+			(#{repNo},#{prjNo},#{repRegister},#{approver},#{title},
+			#{repContent},#{subContent},#{etcContent},'send',sysdate,sysdate,'day')
+<!-- 			(report_seq.nextval,#{prjNo},#{repRegister},#{approver},#{title},
+			#{repContent},#{subContent},#{etcContent},'send',sysdate,sysdate,'day') -->
+	</insert>
+	
+	<!-- 월간업무보고 등록 -->
+	<insert id="insertMonthlyReport" parameterType="report">
+		insert into 
+		report
+			(REP_NO,PRJ_NO,REP_REGISTER,APPROVER,TITLE,
+			REP_CONTENT,SUB_CONTENT,ETC_CONTENT,STT_CODE,SUBMIT_DT,REG_DT,CTG_CODE)
+		values
+			(#{repNo},#{prjNo},#{repRegister},#{approver},#{title},
+			#{repContent},#{subContent},#{etcContent},'send',sysdate,sysdate,'month')
+	</insert>
+	
+	<!-- 보고서 임시저장 -->
+	<insert id="insertDailyTempReport" parameterType="report">
+		insert into 
+		report
+			(REP_NO,PRJ_NO,REP_REGISTER,APPROVER,TITLE,
+			REP_CONTENT,SUB_CONTENT,ETC_CONTENT,STT_CODE,REG_DT,CTG_CODE)
+		values
+			(#{repNo},#{prjNo},#{repRegister},#{approver},#{title},
+			#{repContent},#{subContent},#{etcContent},'temp',sysdate,'day')
+	</insert>
+	
+	<insert id="insertMonthlyTempReport" parameterType="report">
+		insert into 
+		report
+			(REP_NO,PRJ_NO,REP_REGISTER,APPROVER,TITLE,
+			REP_CONTENT,SUB_CONTENT,ETC_CONTENT,STT_CODE,REG_DT,CTG_CODE)
+		values
+			(#{repNo},#{prjNo},#{repRegister},#{approver},#{title},
+			#{repContent},#{subContent},#{etcContent},'temp',sysdate,'month')
+	</insert>
+
+	<select id="selectReportByRepNo" resultMap="reportMap">
+		select *
+		  from report
+		 where prj_no = #{prjNo}
+		   and rep_no = #{repNo}
+	</select>
+	
+	<update id="deleteTempReport" parameterType="int">
+		update report
+		   Set stt_code = 'del'
+		 where Rep_No = #{repNo}
+	</update>
+	
+	<update id="registTempReportToSendReport" parameterType="report">
+		update report
+		   Set REP_REGISTER = #{repRegister}
+		      ,APPROVER = #{approver}
+		      ,TITLE = #{title}
+		      ,REP_CONTENT = #{repContent}
+		      ,SUB_CONTENT = #{subContent}
+		      ,ETC_CONTENT = #{etcContent}
+		      ,stt_code = 'send'
+		      ,SUBMIT_DT = sysdate
+		 where Rep_No = #{repNo}
+	</update>
+	
+	<update id="updateTempReport" parameterType="report">
+		update report
+		   Set REP_REGISTER = #{repRegister}
+		      ,APPROVER = #{approver}
+		      ,TITLE = #{title}
+		      ,REP_CONTENT = #{repContent}
+		      ,SUB_CONTENT = #{subContent}
+		      ,ETC_CONTENT = #{etcContent}
+		      ,REG_DT = sysdate
+		 where Rep_No = #{repNo}
+	</update>
+
+	<update id="updateUnreadToRead" parameterType="int">
+		update report
+		   set return_dt = 'read'
+			  ,appr_dt = sysdate
+		 where Rep_No = #{repNo}
+	</update>
+
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

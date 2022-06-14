@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ComCode-Mapper">
+	<resultMap id="comCode" type="comCode">
+		<result column="COM_CODE_GRP" property="codeGrp" />
+		<result column="COM_CODE" property="code" />
+		<result column="COM_CODE_NM" property="nm" />
+		<result column="COM_CODE_DESC" property="desc" />
+		<result column="UP_COM_CODE_GRP" property="upCodeGrp" />
+		<result column="UP_COM_CODE" property="upCode" />
+		<result column="USE_NY" property="useNy" />
+	</resultMap>
+		
+	<select id="selectComCodeListOfUser" parameterType="str" resultMap="comCode">
+		select *
+		from COM_CODE
+		where USE_NY='Y'
+		and (COM_CODE_GRP='C0001'
+		or COM_CODE_GRP='C0002'
+		or COM_CODE_GRP='C0003'
+		or COM_CODE_GRP='C0004')
+		order by COM_CODE_DESC asc
+		
+	</select>
+		
+	<select id="selectComCodeListByCodeGrp" parameterType="str" resultMap="comCode">
+		select *
+		from COM_CODE
+		where USE_NY='Y'
+		and COM_CODE_GRP=#{codeGrp}
+		order by COM_CODE_DESC asc
+	</select>
+		
+	<select id="selectComCodeByCode" parameterType="comCode" resultMap="comCode">
+		select *
+		from COM_CODE
+		where USE_NY='Y'
+		and COM_CODE_GRP=#{codeGrp}
+		and COM_CODE=#{code}
+	</select>
+	
+	<select id="selectComCodeNmByCode" parameterType="comCode" resultType="str">
+		select COM_CODE_NM
+		from COM_CODE
+		where USE_NY='Y'
+		and COM_CODE_GRP=#{codeGrp}
+		and COM_CODE=#{code}
+		order by COM_CODE_DESC asc
+	</select>
+	
+
+	<update id="insertDept" parameterType="comCode">
+		INSERT INTO com_code (
+		    com_code_grp,
+		    com_code,
+		    com_code_nm,
+		    com_code_desc,
+		    use_ny
+		) VALUES (
+		    'C0003',
+		    #{code},
+		    #{nm},
+		    #{code},
+		    'Y'
+		)
+	</update>
+	
+	<update id="updateDept" parameterType="comCode">
+		update com_code
+		set
+		com_code_nm = #{nm}
+		where com_code = #{code}
+		and com_code_grp='C0003' 
+	</update>
+	
+	<update id="deleteDept" parameterType="str">
+		update com_code
+		set
+		use_ny = 'N'
+		where com_code = #{code}
+		and com_code_grp='C0003'
+	</update>
+	
+	<select id="selectDeptCodeNext" resultType="str">
+		select
+		    max(com_code+1)
+		from
+		    com_code
+		where 
+		    com_code_grp='C0003'
+		    order by COM_CODE_DESC asc
+	</select>
+	
+	<select id="checkDeptCode" resultType="int">
+		select count(com_code_nm)
+		from com_code
+		where com_code_grp='C0003'
+		and com_code_nm = #{nm}
+		and use_ny = 'Y'
+	</select>
+</mapper>
